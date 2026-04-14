@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // <-- Importar useNavigate
 import Sidebar from "../components/Sidebar";
 import TopNavbar from "../components/TopNavBar";
 import DataTable from "../components/DataTable";
@@ -26,6 +27,7 @@ const campanasList = [
 ];
 
 export default function CampanasMarketing() {
+  const navigate = useNavigate(); // <-- Hook de navegación
   const [textoBusqueda, setTextoBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("Todos");
 
@@ -54,7 +56,9 @@ export default function CampanasMarketing() {
               <h1 className="text-2xl font-bold text-[#3b2a2a]">Campañas de marketing</h1>
               <p className="text-sm text-[#7a6a6a] mt-0.5">Gestione sus campañas de marketing</p>
             </div>
-            <button className="bg-[#c8a87a] hover:bg-[#b8986a] text-white font-bold py-3 px-8 rounded-xl text-sm transition-all shadow-sm">
+            <button 
+              onClick={() => navigate("/marketing/agregar")}
+              className="bg-[#c8a87a] hover:bg-[#b8986a] text-white font-bold py-3 px-8 rounded-xl text-sm transition-all shadow-sm">
               Agregar campaña
             </button>
           </div>

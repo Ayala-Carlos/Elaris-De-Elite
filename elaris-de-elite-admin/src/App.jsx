@@ -8,6 +8,11 @@ import Reviews from "./pages/Reviews"
 import Productos from "./pages/Productos";
 import Pedidos from "./pages/Pedidos";
 import CampanasMarketing from "./pages/Marketing";
+import AgregarProducto from "./pages/Agregarproducto";
+import CategoriasYMarcas from "./pages/Categoriasymarcas";
+import AgregarCampana from "./pages/Campanasmerketingagregar";
+import CodigosDescuento from "./pages/CodigosDescuentos";
+import AgregarDescuento from "./pages/AgregarCodigo";
 
 export default function App() {
   return (
@@ -23,6 +28,13 @@ export default function App() {
         <Route path="/productos" element={<Productos/>} />
         <Route path="/pedidos" element={<Pedidos/>} />
         <Route path="/marketing" element={<CampanasMarketing/>} />
+        <Route path="/productos/agregar" element={<AgregarProducto/>} />
+        <Route path="/productos/categoriasymarcas" element={<CategoriasYMarcas/>} />
+        <Route path="/marketing/agregar" element={<AgregarCampana/>} />
+        <Route path="/descuentos" element={<CodigosDescuento/>} />
+        <Route path="/descuentos/agregar" element={<AgregarDescuento/>} />
+
+        
 
       </Routes>
     </BrowserRouter>

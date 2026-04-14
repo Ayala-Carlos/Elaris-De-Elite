@@ -7,7 +7,8 @@ const navItems = [
   { name: "Productos", path: "/productos" },
   { name: "Reseñas", path: "/reviews" },
   { name: "Pedidos", path: "/pedidos"},
-  {name: "Campañas de marketing", path: "/marketing"}
+  {name: "Campañas de marketing", path: "/marketing"},
+  { name: "Códigos de descuentos", path: "/descuentos"}
 ];
 
 export default function Sidebar() {
