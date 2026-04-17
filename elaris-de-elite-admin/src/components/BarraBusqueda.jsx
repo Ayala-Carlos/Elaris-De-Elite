@@ -16,7 +16,7 @@ export default function BarraBusqueda({
           className="w-full border border-[#c8a87a] rounded-full px-5 py-2.5 text-sm text-[#3b2a2a] outline-none placeholder:text-[#9a8a8a] focus:ring-1 focus:ring-[#c8a87a]"
         />
       </div>
-
+      
       {/* Botones de filtro (opcionales) */}
       {filters.length > 0 && (
         <div className="flex gap-2">
