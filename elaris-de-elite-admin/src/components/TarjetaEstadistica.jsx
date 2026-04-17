@@ -1,4 +1,4 @@
-export default function StatCard({ label, value, icon, bgVariant }) {
+export default function TarjetaEstadistica({ label, value, icon, bgVariant }) {
   return (
     <div className="bg-white rounded-2xl border border-[#ede8e0] p-6 flex flex-col items-center gap-3 shadow-sm flex-1">
       {icon && (

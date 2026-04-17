@@ -8,9 +8,9 @@ import Reviews from "./pages/Reviews"
 import Productos from "./pages/Productos";
 import Pedidos from "./pages/Pedidos";
 import CampanasMarketing from "./pages/Marketing";
-import AgregarProducto from "./pages/Agregarproducto";
-import CategoriasYMarcas from "./pages/Categoriasymarcas";
-import AgregarCampana from "./pages/Campanasmerketingagregar";
+import AgregarProducto from "./pages/AgregarProducto";
+import CategoriasYMarcas from "./pages/CategoriasYMarcas";
+import AgregarCampana from "./pages/CampanasMarketingAgregar";
 import CodigosDescuento from "./pages/CodigosDescuentos";
 import AgregarDescuento from "./pages/AgregarCodigo";
 

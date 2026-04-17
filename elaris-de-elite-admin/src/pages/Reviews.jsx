@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Sidebar from "../components/Sidebar";
-import TopNavbar from "../components/TopNavBar";
-import SearchFilterBar from "../components/SearchFilterBar"; // Importamos el componente
+import Sidebar from "../components/BarraLateral.jsx";
+import TopNavbar from "../components/BarraNavegacion.jsx";
+import SearchFilterBar from "../components/BarraBusqueda.jsx"; // Importamos el componente
 
 const stats = [
   { label: "Total de reseñas", value: "23" },

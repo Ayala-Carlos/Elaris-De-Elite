@@ -1,4 +1,4 @@
-export default function DataTable({ headers, gridCols, data, renderRow }) {
+export default function TablaDatos({ headers, gridCols, data, renderRow }) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-[#ede8e0] overflow-hidden">
       

@@ -1,4 +1,4 @@
-export default function SearchFilterBar({ 
+export default function BarraBusqueda({ 
   placeholder, 
   onSearchChange, // <--- Para buscar en el buscador
   filters = [], 

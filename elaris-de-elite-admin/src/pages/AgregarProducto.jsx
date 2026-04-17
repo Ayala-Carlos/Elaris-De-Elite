@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import TopNavbar from "../components/TopNavBar";
+import Sidebar from "../components/BarraLateral.jsx";
+import TopNavbar from "../components/BarraNavegacion.jsx";
 
 const initialForm = {
   nombre: "",

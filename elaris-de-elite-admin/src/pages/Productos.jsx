@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"; // <-- Importar useNavigate
-import Sidebar from "../components/Sidebar";
-import TopNavbar from "../components/TopNavBar";
-import DataTable from "../components/DataTable";
-import SearchFilterBar from "../components/SearchFilterBar";
+import Sidebar from "../components/BarraLateral.jsx";
+import TopNavbar from "../components/BarraNavegacion.jsx";
+import DataTable from "../components/TablaDatos.jsx";
+import SearchFilterBar from "../components/BarraBusqueda.jsx";
 
 const productosList = [
   {

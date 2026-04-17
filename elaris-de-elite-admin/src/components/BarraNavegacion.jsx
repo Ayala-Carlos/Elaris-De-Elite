@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logoImg from "../img/elaris-logo.png";
 
-export default function TopNavbar() {
+export default function BarraNavegacion() {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 

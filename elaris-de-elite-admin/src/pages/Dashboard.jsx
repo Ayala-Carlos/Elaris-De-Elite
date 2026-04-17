@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Sidebar from "../components/Sidebar";
-import StatCard from "../components/StatCard";
-import TopNavbar from "../components/TopNavBar";
+import Sidebar from "../components/BarraLateral.jsx";
+import StatCard from "../components/TarjetaEstadistica.jsx";
+import TopNavbar from "../components/BarraNavegacion.jsx";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 
 const ventasData = [

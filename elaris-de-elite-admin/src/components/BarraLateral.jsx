@@ -11,7 +11,7 @@ const navItems = [
   { name: "Códigos de descuentos", path: "/descuentos"}
 ];
 
-export default function Sidebar() {
+export default function BarraLateral() {
   const location = useLocation(); // Esto detecta en qué URL estás automáticamente
 
   return (
