@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../img/Logo.jpg';
 import Boton from '../components/Boton.jsx'; 
-import MenuHamburguesa from '../components/MenuHamburguesa.jsx';
 
 const Registro = () => {
   const navigate = useNavigate();
@@ -13,10 +12,7 @@ const Registro = () => {
   };
 
   return (
-    <div className="relative flex flex-col items-center min-h-screen bg-[#FAF4ED] px-8 pt-10 pb-10 font-base text-[#5B4D42]">
-      <div className="absolute top-4 right-4 z-50">
-        <MenuHamburguesa />
-      </div>
+    <div className="flex flex-col items-center min-h-screen bg-[#FAF4ED] px-8 pt-10 pb-10 font-base text-[#5B4D42]">
 
       {/* Logo pequeño */}
       <img src={logo} alt="Logo" className="w-24 h-24 object-contain mb-4" />
