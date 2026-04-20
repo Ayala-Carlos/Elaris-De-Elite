@@ -1,28 +1,50 @@
 import React from "react";
 import { Search, User, ShoppingBag } from "lucide-react";
-import logoElaris from "../img/elaris-logo.png";
+import logoElarisNav from "../img/LogoElarisEliteNav.png";
+import { Link } from "react-router-dom"
 
 const BarraNavegacion = () => {
   return (
-    <nav className="w-full bg-[#FAF8F5] shadow-sm px-10 py-4 flex items-center justify-between">
+    <nav className="w-full bg-[#FAF8F5] shadow-sm px-5 py-1 flex items-center justify-between">
       
       {/* Logo */}
-      <img src={logoElaris} alt="logo" className="w-14 h-14 md:w-16 md:h-16 object-contain" />
+      <img
+        src={logoElarisNav}
+        alt="logo"
+        className="w-18 h-18 md:w-20 md:h-20 object-contain -my-2"
+      />
 
       {/* Links */}
-      <ul className="flex gap-10 text-[#6B5B4E] font-medium">
-        <li className="hover:text-[#D4A574] cursor-pointer">Inicio</li>
-        <li className="hover:text-[#D4A574] cursor-pointer">Productos</li>
-        <li className="hover:text-[#D4A574] cursor-pointer">Novedades</li>
-        <li className="hover:text-[#D4A574] cursor-pointer">Nosotros</li>
-        <li className="hover:text-[#D4A574] cursor-pointer">Reseñas</li>
+      <ul className="flex gap-8 text-[#6B5B4E] font-medium">
+        <li>
+          <Link to="/bienvenida" className="hover:text-[#D4A574] cursor-pointer"> Inicio</Link>
+        </li>
+        <li>
+          <Link to="/productos" className="hover:text-[#D4A574] cursor-pointer"> Productos</Link>
+        </li>
+        <li>
+          <Link to="/novedades" className="hover:text-[#D4A574] cursor-pointer"> Novedades</Link>
+        </li>
+        <li>
+          <Link to="/nosotros" className="hover:text-[#D4A574] cursor-pointer"> Nosotros</Link>
+        </li>
+        <li>
+          <Link to="/reseñas" className="hover:text-[#D4A574] cursor-pointer"> Reseñas</Link>
+        </li>
+
       </ul>
 
       {/* Icons */}
-      <div className="flex gap-5 text-[#6B5B4E]">
-        <Search className="cursor-pointer hover:text-[#D4A574]" />
-        <User className="cursor-pointer hover:text-[#D4A574]" />
-        <ShoppingBag className="cursor-pointer hover:text-[#D4A574]" />
+      <div className="flex gap-6 text-[#6B5B4E]">
+        <Link to="/buscar">
+          <Search size={18} className="cursor-pointer hover:text-[#D4A574]" />
+        </Link>
+        <Link to="/perfilusuario">
+          <User size={18} className="cursor-pointer hover:text-[#D4A574]" />
+        </Link>
+        <Link to="/carrito">
+          <ShoppingBag size={18} className="cursor-pointer hover:text-[#D4A574]" />
+        </Link>
       </div>
     </nav>
   );

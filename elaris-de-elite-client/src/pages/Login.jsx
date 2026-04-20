@@ -16,7 +16,10 @@ const Login = () => {
     email: "",
     password: "",
     telefono: "",
-    direccion: ""
+    direccion: "",
+    pais: "",
+    estado: "",
+    ciudad: ""
   });
 
   return (
@@ -156,14 +159,40 @@ const Login = () => {
                     </div>
                   </div>
 
-                  <Input
+                  {/* Ubicación */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                    <Input
+                      label="País"
+                      value={registerData.pais}
+                      onChange={(e) =>
+                        setRegisterData({ ...registerData, pais: e.target.value })
+                      }
+                    />
+
+                    <Input
+                      label="Estado"
+                      value={registerData.estado}
+                      onChange={(e) =>
+                        setRegisterData({ ...registerData, estado: e.target.value })
+                      }
+                    />
+
+                    <Input
+                      label="Ciudad"
+                      value={registerData.ciudad}
+                      onChange={(e) =>
+                        setRegisterData({ ...registerData, ciudad: e.target.value })
+                      }
+                    />
+                  </div>
+                   <Input
                     label="Dirección"
                     value={registerData.direccion}
                     onChange={(e) =>
                       setRegisterData({ ...registerData, direccion: e.target.value })
                     }
                   />
-
                   <Boton tipo="primario" anchoTotal>
                     Registrarse
                   </Boton>

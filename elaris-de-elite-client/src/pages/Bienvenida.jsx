@@ -6,80 +6,69 @@ import modelo from "../img/modelo.png";
 const Bienvenida = () => {
   return (
     <div className="bg-[#FAF8F5] min-h-screen">
-
       <Navbar />
 
       {/* HERO */}
-      <section className="text-center py-16 px-6">
-        <h1 className="text-4xl font-bold text-[#DE4B52] mb-2">
+      <section className="text-center py-14 px-6 ">
+        <h1 className="text-4xl font-bold text-[#DE4B52] mb-2 tracking-widest font-serif">
           ÉLARIS DE ÉLITE
         </h1>
-
-        <p className="italic text-[#DE4B52] mb-4">
-          “Tu poder, tu belleza”
+        <p className="italic text-[#DE4B52] text-sm mb-4">
+          "Tu poder, tu belleza"
         </p>
-
-        <p className="text-[#6B5B4E] max-w-xl mx-auto text-sm mb-6">
+        <p className="text-[#6B5B4E] max-w-md mx-auto text-sm mb-7 leading-relaxed">
           Descubre nuestra exclusiva colección de maquillaje de alta gama,
           diseñada para realzar tu belleza natural con productos de lujo excepcionales.
         </p>
-
         <div className="flex justify-center gap-4">
-          <button className="bg-[#D4A574] text-white px-6 py-2 rounded-md">
+          <button className="bg-[#D4A574] text-white px-6 py-2 rounded-md text-sm hover:bg-[#C29263] transition-colors">
             Explorar colección
           </button>
-
-          <button className="border border-[#D4A574] text-[#6B5B4E] px-6 py-2 rounded-md">
+          <button className="border border-[#D4A574] text-[#6B5B4E] px-6 py-2 rounded-md text-sm hover:bg-[#F2E7E1] transition-colors">
             Ver novedades
           </button>
         </div>
       </section>
 
       {/* ABOUT */}
-      <section className="grid md:grid-cols-2 gap-10 px-10 py-16 items-center">
-        
+      <section className="grid md:grid-cols-2 px-14 py-10 items-center mr-24">
         <img
           src={modelo}
           alt="model"
-          className="w-full h-[300px] object-contain rounded-lg"
+          className="w-full h-[450px] object-contain rounded-lg bg-[#FAF8F5]"
         />
-
         <div>
-          <h4 className="text-[#D4A574] mb-2">Sobre nosotros</h4>
-
-          <h2 className="text-3xl font-bold text-[#6B5B4E] mb-4">
+          <p className="text-[#D4A574] text-1xl mb-4">Sobre nosotros</p>
+          <h2 className="text-3xl font-bold text-[#6B5B4E] mb-4 font-serif">
             Élaris de Élite
           </h2>
-
-          <p className="text-sm text-[#6B5B4E] mb-4">
-            Somos una marca de maquillaje de alta gama comprometida con la excelencia y la elegancia.
-            Cada producto es cuidadosamente formulado con ingredientes premium para ofrecer resultados excepcionales.
+          <p className="text-sm text-[#6B5B4E] mb-4 leading-relaxed">
+            Somos una marca de maquillaje de alta gama comprometida con la
+            excelencia y la elegancia. Cada producto es cuidadosamente formulado
+            con ingredientes premium para ofrecer resultados excepcionales.
           </p>
-
-          <p className="text-sm text-[#6B5B4E] mb-8">
-            Nuestra filosofía “Tu poder, tu belleza” refleja nuestra creencia de que el maquillaje es una herramienta
-            de empoderamiento que realza tu belleza natural y única.
+          <p className="text-sm text-[#6B5B4E] leading-relaxed">
+            Nuestra filosofía "Tu poder, tu belleza" refleja nuestra creencia de
+            que el maquillaje es una herramienta de empoderamiento que realza tu
+            belleza natural y única.
           </p>
 
           {/* Stats */}
-          <div className="flex justify-between mt-6">
+          <div className="flex justify-between mt-8 pt-4 border-t border-[#E8D5CA]">
             <div>
               <h3 className="text-2xl font-bold text-[#D4A574]">100+</h3>
               <p className="text-sm text-[#6B5B4E]">Productos</p>
             </div>
-
             <div>
-              <h3 className="text-2xl font-bold text-[#D4A574]">50+</h3>
+              <h3 className="text-2xl font-bold text-[#D4A574]">50K+</h3>
               <p className="text-sm text-[#6B5B4E]">Clientes</p>
             </div>
-
             <div>
               <h3 className="text-2xl font-bold text-[#D4A574]">15+</h3>
               <p className="text-sm text-[#6B5B4E]">Años</p>
             </div>
           </div>
         </div>
-
       </section>
 
       <Footer />
