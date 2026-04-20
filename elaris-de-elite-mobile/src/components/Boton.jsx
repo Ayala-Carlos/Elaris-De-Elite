@@ -3,13 +3,13 @@ import React from 'react';
 // Definimos las variantes de color según tus bocetos
 const variantesEstilo = {
   // El botón café/dorado de "Iniciar Sesión" o "Proceder al pago"
-  primario: "bg-[#D4A373] text-white hover:bg-[#C29263] active:scale-95",
+  primario: "bg-[#C98F5F] text-white hover:bg-[#B67E4D] active:scale-95 shadow-sm",
   
   // El botón crema de "Registrarse" o "Aplicar"
-  secundario: "bg-[#F8F1ED] text-[#5B4D42] hover:bg-[#F2E7E1] active:scale-95",
+  secundario: "bg-[#E9D7C7] text-[#5B4D42] hover:bg-[#DFC6B1] active:scale-95 shadow-sm",
   
   // El botón con borde de "Continuar comprando" o "Cerrar sesión"
-  outline: "border-2 border-[#D4A373] text-[#D4A373] bg-transparent hover:bg-[#F8F1ED] active:scale-95",
+  outline: "border-2 border-[#A67446] text-[#A67446] bg-transparent hover:bg-[#F4E7DB] active:scale-95",
 };
 
 const Boton = ({ 
@@ -25,8 +25,8 @@ const Boton = ({
       onClick={onClick}
       className={`
         flex items-center justify-center
-        py-3 px-6 
-        rounded-xl 
+        py-4 px-6 
+        rounded-2xl 
         font-bold 
         transition-all 
         duration-200

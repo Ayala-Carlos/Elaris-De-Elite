@@ -1,30 +1,36 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import logo from '../img/Logo.jpg';
 import Boton from '../components/Boton.jsx'; // Importamos tu componente
+import MenuHamburguesa from '../components/MenuHamburguesa.jsx';
 
 const Bienvenida = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white px-8">
-      
-      <h1 className="text-2xl font-bold text-[#5B4D42] mb-12 text-center">
+    <div className="relative min-h-screen bg-[#FAF4ED] px-6 pt-10 pb-8 flex flex-col">
+      <div className="absolute top-4 right-4 z-50">
+        <MenuHamburguesa />
+      </div>
+
+      <h1 className="text-[44px] leading-none font-bold text-[#6B5D50] mb-10 text-left max-w-[340px]">
         Bienvenido a tu belleza
       </h1>
 
-      
-      <div className="mb-16">
-        <img 
-          src="/logo-grande.png" 
-          alt="Elaris de Elite Logo" 
-          className="w-48 h-48 object-contain"
+      <div className="flex justify-center mb-20">
+        <img
+          src={logo}
+          alt="Elaris de Elite Logo"
+          className="w-[330px] h-[330px] object-contain"
         />
       </div>
 
-      
-      <div className="w-full space-y-4 max-w-xs">
-        <Boton tipo="secundario" anchoTotal onClick={() => console.log('Ir a Registro')}>
+      <div className="w-full max-w-[430px] mx-auto space-y-7 mt-auto">
+        <Boton tipo="secundario" anchoTotal onClick={() => navigate('/Registro')}>
           Registrarse
         </Boton>
         
-        <Boton tipo="secundario" anchoTotal onClick={() => console.log('Ir a Login')}>
+        <Boton tipo="secundario" anchoTotal onClick={() => navigate('/Login')}>
           Inicia sesión
         </Boton>
       </div>
