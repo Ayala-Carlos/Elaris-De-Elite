@@ -2,16 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../img/Logo.jpg';
 import Boton from '../components/Boton.jsx'; // Importamos tu componente
-import MenuHamburguesa from '../components/MenuHamburguesa.jsx';
 
 const Bienvenida = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-screen bg-[#FAF4ED] px-6 pt-10 pb-8 flex flex-col">
-      <div className="absolute top-4 right-4 z-50">
-        <MenuHamburguesa />
-      </div>
+    <div className="min-h-screen bg-[#FAF4ED] px-6 pt-10 pb-8 flex flex-col">
 
       <h1 className="text-[44px] leading-none font-bold text-[#6B5D50] mb-10 text-left max-w-[340px]">
         Bienvenido a tu belleza
