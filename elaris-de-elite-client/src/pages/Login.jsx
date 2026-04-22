@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import logoImg from "../img/LogoElarisElite.png";
 import Input from '../components/CajaTexto.jsx';
 import Boton from '../components/Boton.jsx';
-
+import { Link } from "react-router-dom";
 const Login = () => {
   const [activeTab, setActiveTab] = useState('login');
 
@@ -114,7 +114,9 @@ const Login = () => {
                   </div>
 
                   <Boton tipo="primario" anchoTotal>
-                    Iniciar sesión
+                    <Link to="/bienvenida">
+                      Iniciar sesión
+                    </Link>
                   </Boton>
                 </>
               ) : (
@@ -194,7 +196,9 @@ const Login = () => {
                     }
                   />
                   <Boton tipo="primario" anchoTotal>
-                    Registrarse
+                    <Link to="/bienvenida">
+                      Crear cuenta
+                    </Link>
                   </Boton>
                 </>
               )}

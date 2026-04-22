@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom"; 
 
 export default function Login() {
   const [form, setForm] = useState({
@@ -82,7 +83,9 @@ export default function Login() {
           className="w-full bg-[#c0392b] hover:bg-[#a93224] text-white font-bold text-sm py-3 rounded-full transition-colors"
           style={{ fontFamily: "'Montserrat', sans-serif" }}
         >
-          Iniciar sesión
+          <Link to="/dashboard">
+            Iniciar sesión
+          </Link>
         </button>
 
         {/* Link a Register */}

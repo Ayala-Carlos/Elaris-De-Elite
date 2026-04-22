@@ -33,9 +33,6 @@ export default function App() {
         <Route path="/marketing/agregar" element={<AgregarCampana/>} />
         <Route path="/descuentos" element={<CodigosDescuento/>} />
         <Route path="/descuentos/agregar" element={<AgregarDescuento/>} />
-
-        
-
       </Routes>
     </BrowserRouter>
   );

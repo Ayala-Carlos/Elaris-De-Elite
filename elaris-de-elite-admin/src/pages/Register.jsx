@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { Link } from "react-router-dom";
 export default function Register() {
   const [form, setForm] = useState({
     nombre: "",
@@ -140,7 +140,9 @@ export default function Register() {
           className="w-full bg-[#c0392b] hover:bg-[#a93224] text-white font-bold text-sm py-3 rounded-full transition-colors"
           style={{ fontFamily: "'Montserrat', sans-serif" }}
         >
-          Crear cuenta
+          <Link to="/dashboard">
+            Crear cuenta
+          </Link>
         </button>
 
         {/* Link a Login */}

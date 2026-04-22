@@ -2,6 +2,8 @@ import React from "react";
 import Navbar from "../components/BarraNavegacion.jsx";
 import Footer from "../components/Footer.jsx";
 import modelo from "../img/modelo.png";
+import Boton from "../components/Boton.jsx";
+import { Link } from "react-router-dom";
 
 const Bienvenida = () => {
   return (
@@ -21,12 +23,16 @@ const Bienvenida = () => {
           diseñada para realzar tu belleza natural con productos de lujo excepcionales.
         </p>
         <div className="flex justify-center gap-4">
-          <button className="bg-[#D4A574] text-white px-6 py-2 rounded-md text-sm hover:bg-[#C29263] transition-colors">
-            Explorar colección
-          </button>
-          <button className="border border-[#D4A574] text-[#6B5B4E] px-6 py-2 rounded-md text-sm hover:bg-[#F2E7E1] transition-colors">
-            Ver novedades
-          </button>
+          <Boton tipo="primario">
+            <Link to="/productos">
+              Explorar colección
+            </Link>
+          </Boton>
+          <Boton tipo="secundario">
+            <Link to="/novedades">
+              Ver novedades
+            </Link>
+          </Boton>
         </div>
       </section>
 
