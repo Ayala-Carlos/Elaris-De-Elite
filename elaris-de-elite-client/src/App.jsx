@@ -6,6 +6,9 @@ import Carrito from "./pages/Carrito.jsx";
 import Productos from "./pages/Productos.jsx"; 
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Novedades from "./pages/Novedades.jsx";
+import Resenias from "./pages/reseñas.jsx";
+import Contacto from "./pages/Contacto.jsx";
+import TerminosCondiciones from "./pages/TerminosCondiciones.jsx";
 
 function App() {
   
@@ -21,6 +24,9 @@ function App() {
           <Route path="/productos" element={<Productos/>}></Route>
           <Route path="/producto/:id" element={<ProductoDetalle />} />
           <Route path="/novedades" element={<Novedades/>}></Route>
+          <Route path="/reseñas" element={<Resenias/>}></Route>
+          <Route path="/Contacto" element={<Contacto/>}></Route>
+          <Route path="/TerminosCondiciones" element={<TerminosCondiciones/>}></Route>
         </Routes>
       </BrowserRouter>
     </>

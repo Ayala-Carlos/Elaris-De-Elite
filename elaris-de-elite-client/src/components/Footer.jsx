@@ -23,7 +23,10 @@ const Footer = () => {
                             <Link to="/nosotros" className="cursor-pointer hover:text-[#7a2530] transition-colors">Nosotros</Link>
                         </li>
                         <li>
-                            <Link to="/contactanos" className="cursor-pointer hover:text-[#7a2530] transition-colors">Contáctanos</Link>
+                            <Link to="/Contacto" className="cursor-pointer hover:text-[#7a2530] transition-colors">Contáctanos</Link>
+                        </li>
+                         <li>
+                            <Link to="/TerminosCondiciones" className="cursor-pointer hover:text-[#7a2530] transition-colors">Términos y condiciones</Link>
                         </li>
                     </ul>
                 </div>
