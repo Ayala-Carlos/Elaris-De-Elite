@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import Navbar from "../components/BarraNavegacion.jsx";
 import Footer from "../components/Footer.jsx";
+import { Link } from "react-router-dom";
 
+// Página de contacto con formulario
 const Contacto = () => {
   const [form, setForm] = useState({
     nombre: "",
@@ -245,7 +247,9 @@ const Contacto = () => {
               <p className="text-xs text-center text-[#9C8275]">
                 Al enviar el mensaje, aceptas nuestra{" "}
                 <span className="text-[#D4A574] cursor-pointer hover:underline">
-                  Política y privacidad
+                  <Link to="/terminosycondiciones">
+                    Política y privacidad
+                  </Link>
                 </span>
               </p>
             </form>

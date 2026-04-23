@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 
 const Login = () => {
   const [activeTab, setActiveTab] = useState('login');
-  // 'login' | 'register' | 'forgot' | 'reset'
   const [vista, setVista] = useState('login');
 
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -216,16 +215,6 @@ const Login = () => {
                   <Link to="/bienvenida">Enviar</Link>
                 </Boton>
               </form>
-            )}
-
-            {/* Volver al inicio (solo en login / register) */}
-            {(vista === 'login' || vista === 'register') && (
-              <button className="w-full mt-8 flex items-center justify-center text-xs text-gray-400 hover:text-[#5c4d42] transition-colors group">
-                <svg className="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Volver al inicio
-              </button>
             )}
 
           </div>

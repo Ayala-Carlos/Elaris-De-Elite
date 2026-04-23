@@ -1,235 +1,233 @@
 import { useState } from "react";
-import {
-    User, Package, Heart, Settings, LogOut, MapPin, Phone,
-    Mail, Edit2, Star, ChevronRight, Check, ShoppingBag,
-    Search, X, Plus, Trash2
-} from "lucide-react";
-import NavBar from "../components/BarraNavegacion.jsx"
+import { User, LogOut, MapPin, Phone, Mail, Edit2, Check } from "lucide-react";
+import NavBar from "../components/BarraNavegacion.jsx";
 import Footer from "../components/Footer.jsx";
+import {Link} from "react-router-dom";
 
-
-// ─── COLORES DE MARCA ─────────────────────────────────────────────────────────
+// COLORES
 const C = {
-    rojo: "#DE4B52",
-    dorado: "#D4A574",
-    marron: "#6B5B4E",
-    fondo: "#FAF8F5",
-    rosa: "#E8949B",
-    crema: "#F2E7E1",
+  rojo: "#DE4B52",
+  dorado: "#D4A574",
+  marron: "#6B5B4E",
+  fondo: "#FAF8F5",
+  rosa: "#E8949B",
+  crema: "#F2E7E1",
 };
 
-// ─── DATOS MOCK ───────────────────────────────────────────────────────────────
+//  DATA
 const usuario = {
-    nombre: "María Fernández",
-    email: "maria.fernandez@gmail.com",
-    telefono: "+503 7890-1234",
-    direccion: "Col. Escalón, San Salvador",
-    miembro: "Miembro Gold",
-    desde: "Enero 2023",
-    iniciales: "MF",
-    pedidos: 12,
-    puntos: 850,
+  nombre: "María Fernández",
+  email: "maria.fernandez@gmail.com",
+  telefono: "+503 7890-1234",
+  direccion: "Col. Escalón, San Salvador",
+  miembro: "Miembro Gold",
+  desde: "Enero 2023",
+  iniciales: "MF",
+  pedidos: 12,
+  puntos: 850,
 };
 
-// ─── TAB: MI PERFIL ───────────────────────────────────────────────────────────
+// COMPONENTE STAT
+const Stat = ({ val, label }) => (
+  <div className="text-center bg-white/20 px-4 py-2 rounded-lg">
+    <p className="text-lg font-bold text-white">{val}</p>
+    <p className="text-xs text-white/80">{label}</p>
+  </div>
+);
+
+// TAB PERFIL
 const TabPerfil = () => {
-    const [editando, setEditando] = useState(false);
-    const [form, setForm] = useState({
-        nombre: usuario.nombre,
-        email: usuario.email,
-        telefono: usuario.telefono,
-        direccion: usuario.direccion,
-    });
+  const [editando, setEditando] = useState(false);
+  const [form, setForm] = useState({
+    nombre: usuario.nombre,
+    email: usuario.email,
+    telefono: usuario.telefono,
+    direccion: usuario.direccion,
+  });
 
-    const Campo = ({ label, fieldKey, icon }) => (
-        <div style={{ marginBottom: 16 }}>
-            <label style={{
-                fontSize: 12, color: C.marron, fontWeight: 600,
-                display: "block", marginBottom: 5,
-            }}>
-                {label}
-            </label>
-            <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }}>
-                    {icon}
-                </span>
-                <input
-                    value={form[fieldKey]}
-                    disabled={!editando}
-                    onChange={e => setForm({ ...form, [fieldKey]: e.target.value })}
-                    style={{
-                        width: "100%",
-                        padding: "10px 12px 10px 36px",
-                        border: `1.5px solid ${editando ? C.dorado : "#E8D5CA"}`,
-                        borderRadius: 8,
-                        fontSize: 13,
-                        color: C.marron,
-                        background: editando ? "#fff" : C.fondo,
-                        outline: "none",
-                        boxSizing: "border-box",
-                        transition: "border-color 0.2s",
-                    }}
-                />
-            </div>
-        </div>
-    );
+  const Campo = ({ label, fieldKey, icon }) => (
+    <div>
+      <label className="text-xs font-semibold text-[#6B5B4E] block mb-1">
+        {label}
+      </label>
 
-    return (
-        <div>
-            {/* Encabezado + botón editar */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: C.marron, margin: 0 }}>
-                    Información personal
-                </h3>
-                <button
-                    onClick={() => setEditando(!editando)}
-                    style={{
-                        display: "flex", alignItems: "center", gap: 6,
-                        background: editando ? C.dorado : "transparent",
-                        color: editando ? "#fff" : C.dorado,
-                        border: `1.5px solid ${C.dorado}`,
-                        padding: "7px 16px", borderRadius: 8,
-                        fontSize: 13, cursor: "pointer", fontWeight: 600,
-                        transition: "all 0.2s",
-                    }}
-                >
-                    {editando ? <><Check size={14} /> Guardar</> : <><Edit2 size={14} /> Editar</>}
-                </button>
-            </div>
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A574]">
+          {icon}
+        </span>
 
-            {/* Campos en grid 2 columnas */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
-                <Campo label="Nombre completo" fieldKey="nombre" icon={<User size={14} color={C.dorado} />} />
-                <Campo label="Correo electrónico" fieldKey="email" icon={<Mail size={14} color={C.dorado} />} />
-                <Campo label="Teléfono" fieldKey="telefono" icon={<Phone size={14} color={C.dorado} />} />
-                <Campo label="Dirección" fieldKey="direccion" icon={<MapPin size={14} color={C.dorado} />} />
-            </div>
+        <input
+          value={form[fieldKey]}
+          disabled={!editando}
+          onChange={(e) => setForm({ ...form, [fieldKey]: e.target.value })}
+          className={`w-full pl-10 pr-3 py-2 rounded-lg text-sm outline-none
+          ${
+            editando
+              ? "border-2 border-[#D4A574] bg-white"
+              : "border border-[#E8D5CA] bg-[#FAF8F5]"
+          }`}
+        />
+      </div>
+    </div>
+  );
 
-            {/* Cambiar contraseña */}
-            <div style={{
-                marginTop: 24, padding: "16px 20px",
-                background: C.crema, borderRadius: 10,
-                border: "1px solid #E8D5CA",
-            }}>
-                <p style={{ fontSize: 12, color: C.marron, fontWeight: 600, margin: "0 0 6px" }}>
-                    Cambiar contraseña
-                </p>
-                <p style={{ fontSize: 12, color: "#9c8880", margin: 0 }}>
-                    Para cambiar tu contraseña, enviaremos un enlace de confirmación a tu correo registrado.
-                </p>
-                <button style={{
-                    marginTop: 10, background: "transparent",
-                    border: `1.5px solid ${C.rojo}`, color: C.rojo,
-                    padding: "7px 16px", borderRadius: 8,
-                    fontSize: 12, cursor: "pointer", fontWeight: 600,
-                }}>
-                    Solicitar cambio
-                </button>
-            </div>
-        </div>
-    );
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-base font-bold text-[#6B5B4E]">
+          Información personal
+        </h3>
+
+        <button
+          onClick={() => setEditando(!editando)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border
+          ${
+            editando
+              ? "bg-[#D4A574] text-white border-[#D4A574]"
+              : "text-[#D4A574] border-[#D4A574]"
+          }`}
+        >
+          {editando ? <Check size={14} /> : <Edit2 size={14} />}
+          {editando ? "Guardar" : "Editar"}
+        </button>
+      </div>
+
+      {/* Campos */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Campo
+          label="Nombre completo"
+          fieldKey="nombre"
+          icon={<User size={14} />}
+        />
+        <Campo
+          label="Correo electrónico"
+          fieldKey="email"
+          icon={<Mail size={14} />}
+        />
+        <Campo
+          label="Teléfono"
+          fieldKey="telefono"
+          icon={<Phone size={14} />}
+        />
+        <Campo
+          label="Dirección"
+          fieldKey="direccion"
+          icon={<MapPin size={14} />}
+        />
+      </div>
+
+      {/* Extra */}
+      <div className="mt-6 p-4 bg-[#F2E7E1] rounded-lg border border-[#E8D5CA]">
+        <p className="text-xs font-semibold text-[#6B5B4E] mb-1">
+          Cambiar contraseña
+        </p>
+        <p className="text-xs text-gray-500">
+          Te enviaremos un enlace a tu correo.
+        </p>
+
+        <button className="mt-3 border border-[#DE4B52] text-[#DE4B52] px-4 py-2 rounded-lg text-xs font-semibold">
+          Solicitar cambio
+        </button>
+      </div>
+    </div>
+  );
 };
 
-// ─── PÁGINA PRINCIPAL ─────────────────────────────────────────────────────────
-export default function PerfilUsuario() {
-    return (
-        <div className="bg-[#FAF8F5] min-h-screen flex flex-col">
-            <NavBar />
+// MAIN
+const PerfilUsuario = () => {
+  return (
+    <div className="bg-[#FAF8F5] min-h-screen flex flex-col">
+      <NavBar />
 
-            {/*CONTENIDO */}
-            <main className="flex-1">
-                {/* HEADER */}
-                <div style={{
-                    background: `linear-gradient(135deg, ${C.rosa} 0%, #E8A0A8 50%, ${C.dorado} 100%)`,
-                    padding: "32px 48px", display: "flex", alignItems: "center", gap: 24, marginTop:10
-                }}>
-                    {/* Avatar */}
-                    <div style={{
-                        width: 72, height: 72, borderRadius: "50%", background: "#fff",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 22, fontWeight: 700, color: C.rosa, flexShrink: 0,
-                        border: "3px solid rgba(255,255,255,0.6)",
-                    }}>
-                        {usuario.iniciales}
-                    </div>
+      <main className="flex-1">
+        {/* HEADER */}
+        <div
+          className="bg-gradient-to-r from-[#E8949B] via-[#E8A0A8] to-[#D4A574]
+          px-4 sm:px-6 md:px-10 py-6 flex flex-col md:flex-row items-center gap-6"
+        >
+          {/* Avatar */}
+          <div
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center 
+            text-xl font-bold text-[#E8949B] border-4 border-white/60"
+          >
+            {usuario.iniciales}
+          </div>
 
-                    {/* Info */}
-                    <div style={{ flex: 1 }}>
-                        <h2 style={{ margin: "0 0 3px", fontSize: 20, fontWeight: 700, color: "#fff" }}>
-                            {usuario.nombre}
-                        </h2>
-                        <p style={{ margin: "0 0 8px", fontSize: 13, color: "rgba(255,255,255,0.85)" }}>
-                            {usuario.email} · Miembro desde {usuario.desde}
-                        </p>
-                        <span style={{
-                            background: "rgba(255,255,255,0.25)", color: "#fff",
-                            fontSize: 11, fontWeight: 700, padding: "3px 12px",
-                            borderRadius: 20, letterSpacing: 0.5,
-                        }}>
-                            ✦ {usuario.miembro}
-                        </span>
-                    </div>
+          {/* Info */}
+          <div className="text-center md:text-left flex-1">
+            <h2 className="text-lg sm:text-xl font-bold text-white">
+              {usuario.nombre}
+            </h2>
+            <p className="text-xs sm:text-sm text-white/80">
+              {usuario.email} · Desde {usuario.desde}
+            </p>
 
-                    {/* Stats */}
-                    <div style={{ display: "flex", gap: 16 }}>
-                        {[{ val: usuario.pedidos, label: "Pedidos" }, { val: usuario.puntos, label: "Puntos" }].map(({ val, label }) => (
-                            <div key={label} style={{
-                                textAlign: "center", background: "rgba(255,255,255,0.2)",
-                                padding: "12px 22px", borderRadius: 10,
-                            }}>
-                                <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#fff" }}>{val}</p>
-                                <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.85)" }}>{label}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+            <span className="inline-block mt-2 text-xs font-bold bg-white/30 text-white px-3 py-1 rounded-full">
+              ✦ {usuario.miembro}
+            </span>
+          </div>
 
-                {/* LAYOUT */}
-                <div style={{
-                    display: "grid", gridTemplateColumns: "220px 1fr",
-                    gap: 24, padding: "28px 48px",
-                    maxWidth: 1100, margin: "0 auto",
-                }}>
-                    {/* SIDEBAR */}
-                    <div>
-                        <div style={{
-                            background: "#fff", borderRadius: 12,
-                            border: "1px solid #E8D5CA", overflow: "hidden", marginBottom: 14,
-                        }}>
-                            {/* Tab único activo */}
-                            <div style={{
-                                display: "flex", alignItems: "center", gap: 12,
-                                padding: "13px 18px",
-                                background: C.crema,
-                                borderLeft: `3px solid ${C.dorado}`,
-                            }}>
-                                <User size={16} color={C.dorado} />
-                                <span style={{ fontSize: 13, fontWeight: 700, color: C.marron }}>Mi perfil</span>
-                            </div>
-                        </div>
-
-                        <button style={{
-                            width: "100%", display: "flex", alignItems: "center", gap: 10,
-                            padding: "11px 18px", border: "1px solid #F5D6D8",
-                            borderRadius: 10, background: "#fff",
-                            color: C.rojo, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                        }}>
-                            <LogOut size={15} /> Cerrar sesión
-                        </button>
-                    </div>
-
-                    {/* CONTENIDO */}
-                    <div style={{
-                        background: "#fff", borderRadius: 12,
-                        border: "1px solid #E8D5CA",
-                        padding: "24px 28px", minHeight: 400,
-                    }}>
-                        <TabPerfil />
-                    </div>
-                </div>
-            </main>
-            <Footer></Footer>
+          {/* Stats */}
+          <div className="flex gap-4">
+            <Stat val={usuario.pedidos} label="Pedidos" />
+            <Stat val={usuario.puntos} label="Puntos" />
+          </div>
         </div>
-        
-    );
+
+        {/* LAYOUT */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-8 grid gap-6 lg:grid-cols-4">
+          {/* SIDEBAR */}
+          <aside className="lg:col-span-1">
+            {/* CONTENEDOR */}
+            <div className="flex lg:flex-col gap-4 overflow-x-auto lg:overflow-visible pb-2">
+              {/* TAB PERFIL */}
+              <div className="bg-white border border-[#E8D5CA] rounded-lg min-w-[180px]">
+                <div className="flex items-center gap-2 p-4 bg-[#F2E7E1] border-l-4 border-[#D4A574]">
+                  <User size={16} className="text-[#D4A574]" />
+                  <span className="text-sm font-bold text-[#6B5B4E]">
+                    Mi perfil
+                  </span>
+                </div>
+              </div>
+
+              {/* ESPACIO SOLO EN DESKTOP */}
+              <div className="hidden lg:block h-4"></div>
+
+              {/* BOTÓN LOGOUT */}
+              <button
+                className="
+                min-w-[180px]
+                flex items-center justify-center gap-2 
+                px-4 py-3 
+                border border-[#F5D6D8] 
+                rounded-lg 
+                bg-white 
+                text-[#DE4B52] 
+                text-sm font-semibold
+                hover:bg-[#FDECEC] 
+                transition
+                lg:mt-2
+                "
+                >
+                <LogOut size={16} />
+                <Link to="/login">
+                    Cerrar sesión
+                </Link>
+              </button>
+            </div>
+          </aside>
+
+          {/* CONTENIDO */}
+          <section className="lg:col-span-3 bg-white border border-[#E8D5CA] rounded-xl p-4 sm:p-6">
+            <TabPerfil />
+          </section>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
 }
+
+export default PerfilUsuario;
