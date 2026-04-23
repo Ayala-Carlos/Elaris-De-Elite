@@ -2,6 +2,8 @@ import { useState } from "react";
 import Sidebar from "../components/BarraLateral.jsx";
 import StatCard from "../components/TarjetaEstadistica.jsx";
 import TopNavbar from "../components/BarraNavegacion.jsx";
+import { useNavigate } from "react-router-dom";
+
 import {
   LineChart,
   Line,
@@ -53,6 +55,8 @@ const stats = [
 const filters = ["7 días", "30 días", "3 meses", "7 meses", "Todo"];
 
 export default function Ventas() {
+  const navigate = useNavigate();
+
   const [active, setActive] = useState("Ventas");
   const [activeFilter, setActiveFilter] = useState("30 días");
 
@@ -81,7 +85,9 @@ export default function Ventas() {
               </h1>
               <p className="text-sm text-[#7a6a6a] mt-0.5">Gestione sus ventas</p>
             </div>
-            <button className="bg-[#c8a87a] hover:bg-[#b8986a] text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors shadow-sm">
+            <button 
+              onClick={() => navigate("/descuentos")}
+              className="bg-[#c8a87a] hover:bg-[#b8986a] text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors shadow-sm">
               Codigós de descuento
             </button>
           </div>
