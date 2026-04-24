@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "../components/BarraNavegacion.jsx";
 import Footer from "../components/Footer.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
@@ -20,7 +20,26 @@ const productos = [
   { id: 6, categoria: "ROSTRO", nombre: "Cookie Highlight", precio: 39, img: CookieHighlight },
 ];
 
+const categorias = ["TODOS", "LABIALES", "OJOS", "ROSTRO", "ACCESORIOS", "FRAGANCIAS"];
+const precios = ["TODOS", "MENOR_75", "ENTRE_75_100"];
+
 const Productos = () => {
+  const [categoriaActiva, setCategoriaActiva] = useState("TODOS");
+  const [precioActivo, setPrecioActivo] = useState("TODOS");
+
+  // FILTRO COMBINADO
+  const productosFiltrados = productos.filter((p) => {
+    const cumpleCategoria =
+      categoriaActiva === "TODOS" || p.categoria === categoriaActiva;
+
+    const cumplePrecio =
+      precioActivo === "TODOS" ||
+      (precioActivo === "MENOR_75" && p.precio < 75) ||
+      (precioActivo === "ENTRE_75_100" && p.precio >= 75 && p.precio <= 100);
+
+    return cumpleCategoria && cumplePrecio;
+  });
+
   return (
     <div className="bg-[#FAF8F5] min-h-screen flex flex-col">
       <Navbar />
@@ -38,25 +57,30 @@ const Productos = () => {
           </p>
         </div>
 
-        {/* LAYOUT */}
         <div className="grid gap-8 lg:grid-cols-4">
 
           {/* SIDEBAR */}
           <aside className="lg:col-span-1">
-
-            
             <div className="flex lg:block gap-6 overflow-x-auto pb-2">
 
               {/* Categorías */}
               <div className="min-w-[150px]">
                 <h3 className="font-bold text-[#6B5B4E] mb-3">Categorías</h3>
                 <ul className="space-y-2 text-sm">
-                  <li className="bg-[#D4A574] text-white px-3 py-1 rounded">TODOS</li>
-                  <li className="text-[#6B5B4E]">LABIALES</li>
-                  <li className="text-[#6B5B4E]">OJOS</li>
-                  <li className="text-[#6B5B4E]">ROSTRO</li>
-                  <li className="text-[#6B5B4E]">ACCESORIOS</li>
-                  <li className="text-[#6B5B4E]">FRAGANCIAS</li>
+                  {categorias.map((cat) => (
+                    <li key={cat}>
+                      <button
+                        onClick={() => setCategoriaActiva(cat)}
+                        className={`px-3 py-1 rounded w-full text-left transition ${
+                          categoriaActiva === cat
+                            ? "bg-[#D4A574] text-white"
+                            : "text-[#6B5B4E] hover:bg-gray-200"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -64,23 +88,58 @@ const Productos = () => {
               <div className="min-w-[150px]">
                 <h3 className="font-bold text-[#6B5B4E] mb-3">Precio</h3>
                 <ul className="space-y-2 text-sm">
-                  <li className="bg-[#E89B9B] text-white px-3 py-1 rounded">Todos</li>
-                  <li className="text-[#6B5B4E]">Menos de $75</li>
-                  <li className="text-[#6B5B4E]">$75 - $100</li>
+                  <li>
+                    <button
+                      onClick={() => setPrecioActivo("TODOS")}
+                      className={`px-3 py-1 rounded w-full text-left ${
+                        precioActivo === "TODOS"
+                          ? "bg-[#E89B9B] text-white"
+                          : "text-[#6B5B4E] hover:bg-gray-200"
+                      }`}
+                    >
+                      Todos
+                    </button>
+                  </li>
+
+                  <li>
+                    <button
+                      onClick={() => setPrecioActivo("MENOR_75")}
+                      className={`px-3 py-1 rounded w-full text-left ${
+                        precioActivo === "MENOR_75"
+                          ? "bg-[#E89B9B] text-white"
+                          : "text-[#6B5B4E] hover:bg-gray-200"
+                      }`}
+                    >
+                      Menos de $75
+                    </button>
+                  </li>
+
+                  <li>
+                    <button
+                      onClick={() => setPrecioActivo("ENTRE_75_100")}
+                      className={`px-3 py-1 rounded w-full text-left ${
+                        precioActivo === "ENTRE_75_100"
+                          ? "bg-[#E89B9B] text-white"
+                          : "text-[#6B5B4E] hover:bg-gray-200"
+                      }`}
+                    >
+                      $75 - $100
+                    </button>
+                  </li>
                 </ul>
               </div>
 
             </div>
           </aside>
 
-          {/*PRODUCTOS */}
+          {/* PRODUCTOS */}
           <section className="lg:col-span-3">
             <p className="text-xs text-gray-400 mb-4">
-              {productos.length} productos encontrados
+              {productosFiltrados.length} productos encontrados
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {productos.map((p) => (
+              {productosFiltrados.map((p) => (
                 <TarjetaProducto key={p.id} producto={p} />
               ))}
             </div>

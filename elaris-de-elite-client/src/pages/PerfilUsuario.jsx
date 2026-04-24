@@ -1,233 +1,285 @@
 import { useState } from "react";
-import { User, LogOut, MapPin, Phone, Mail, Edit2, Check } from "lucide-react";
+import {
+  User,
+  LogOut,
+  MapPin,
+  Phone,
+  Mail,
+  Edit2,
+  Check,
+} from "lucide-react";
 import NavBar from "../components/BarraNavegacion.jsx";
 import Footer from "../components/Footer.jsx";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 
-// COLORES
-const C = {
-  rojo: "#DE4B52",
-  dorado: "#D4A574",
-  marron: "#6B5B4E",
-  fondo: "#FAF8F5",
-  rosa: "#E8949B",
-  crema: "#F2E7E1",
-};
+const Campo = ({
+  label,
+  fieldKey,
+  icon,
+  value,
+  editando,
+  onChange,
+  error,
+  type = "text",
+}) => (
+  <div>
+    <label className="text-xs font-semibold text-[#6B5B4E] block mb-1">
+      {label}
+    </label>
 
-//  DATA
-const usuario = {
-  nombre: "María Fernández",
-  email: "maria.fernandez@gmail.com",
-  telefono: "+503 7890-1234",
-  direccion: "Col. Escalón, San Salvador",
-  miembro: "Miembro Gold",
-  desde: "Enero 2023",
-  iniciales: "MF",
-  pedidos: 12,
-  puntos: 850,
-};
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A574]">
+        {icon}
+      </span>
 
-// COMPONENTE STAT
-const Stat = ({ val, label }) => (
-  <div className="text-center bg-white/20 px-4 py-2 rounded-lg">
-    <p className="text-lg font-bold text-white">{val}</p>
-    <p className="text-xs text-white/80">{label}</p>
+      <input
+        type={type}
+        value={value}
+        disabled={!editando}
+        onChange={(e) => onChange(fieldKey, e.target.value)}
+        className={`w-full pl-10 pr-3 py-2 rounded-lg text-sm outline-none transition-all
+        ${
+          error
+            ? "border-2 border-red-400 bg-white"
+            : editando
+            ? "border-2 border-[#D4A574] bg-white shadow-sm"
+            : "border border-[#E8D5CA] bg-[#FAF8F5]"
+        }`}
+      />
+    </div>
+
+    {error && (
+      <p className="text-[10px] text-red-500 mt-1 font-medium">
+        {error}
+      </p>
+    )}
   </div>
 );
 
-// TAB PERFIL
 const TabPerfil = () => {
   const [editando, setEditando] = useState(false);
+  const [correoEnviado, setCorreoEnviado] = useState(false);
+  const [errores, setErrores] = useState({});
+
   const [form, setForm] = useState({
-    nombre: usuario.nombre,
-    email: usuario.email,
-    telefono: usuario.telefono,
-    direccion: usuario.direccion,
+    nombre: "María Fernández",
+    email: "maria.fernandez@gmail.com",
+    telefono: "+503 7890-1234",
+    direccion: "Col. Escalón, San Salvador",
   });
 
-  const Campo = ({ label, fieldKey, icon }) => (
-    <div>
-      <label className="text-xs font-semibold text-[#6B5B4E] block mb-1">
-        {label}
-      </label>
+  const handleInputChange = (key, value) => {
+    setForm({ ...form, [key]: value });
 
-      <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A574]">
-          {icon}
-        </span>
+    if (errores[key]) {
+      setErrores({ ...errores, [key]: null });
+    }
+  };
 
-        <input
-          value={form[fieldKey]}
-          disabled={!editando}
-          onChange={(e) => setForm({ ...form, [fieldKey]: e.target.value })}
-          className={`w-full pl-10 pr-3 py-2 rounded-lg text-sm outline-none
-          ${
-            editando
-              ? "border-2 border-[#D4A574] bg-white"
-              : "border border-[#E8D5CA] bg-[#FAF8F5]"
-          }`}
-        />
-      </div>
-    </div>
-  );
+  const validarEmail = (email) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const handleGuardar = (e) => {
+    e.preventDefault();
+
+    if (!validarEmail(form.email)) {
+      setErrores({ email: "Introduce un correo válido" });
+      return;
+    }
+
+    setEditando(false);
+    setErrores({});
+  };
 
   return (
-    <div>
-      {/* Header */}
+    <form onSubmit={handleGuardar}>
+      {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-base font-bold text-[#6B5B4E]">
           Información personal
         </h3>
 
-        <button
-          onClick={() => setEditando(!editando)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border
-          ${
-            editando
-              ? "bg-[#D4A574] text-white border-[#D4A574]"
-              : "text-[#D4A574] border-[#D4A574]"
-          }`}
-        >
-          {editando ? <Check size={14} /> : <Edit2 size={14} />}
-          {editando ? "Guardar" : "Editar"}
-        </button>
+        {editando ? (
+          <button
+            type="submit"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-[#D4A574] text-white border border-[#D4A574] hover:bg-[#b88d5c] transition"
+          >
+            <Check size={14} /> Guardar
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              console.log("CLICK EDITAR");
+              setEditando(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border border-[#D4A574] text-[#D4A574] hover:bg-[#FDF2EC] transition"
+          >
+            <Edit2 size={14} /> Editar
+          </button>
+        )}
       </div>
 
-      {/* Campos */}
+      {/* CAMPOS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Campo
           label="Nombre completo"
           fieldKey="nombre"
           icon={<User size={14} />}
+          value={form.nombre}
+          editando={editando}
+          onChange={handleInputChange}
         />
+
         <Campo
           label="Correo electrónico"
           fieldKey="email"
+          type="email"
           icon={<Mail size={14} />}
+          value={form.email}
+          editando={editando}
+          onChange={handleInputChange}
+          error={errores.email}
         />
+
         <Campo
           label="Teléfono"
           fieldKey="telefono"
           icon={<Phone size={14} />}
+          value={form.telefono}
+          editando={editando}
+          onChange={handleInputChange}
         />
+
         <Campo
           label="Dirección"
           fieldKey="direccion"
           icon={<MapPin size={14} />}
+          value={form.direccion}
+          editando={editando}
+          onChange={handleInputChange}
         />
       </div>
 
-      {/* Extra */}
-      <div className="mt-6 p-4 bg-[#F2E7E1] rounded-lg border border-[#E8D5CA]">
+      {/* CONTRASEÑA */}
+      <div className="mt-6 p-4 bg-[#F2E7E1] rounded-2xl border border-[#E8D5CA]">
         <p className="text-xs font-semibold text-[#6B5B4E] mb-1">
           Cambiar contraseña
         </p>
-        <p className="text-xs text-gray-500">
-          Te enviaremos un enlace a tu correo.
+        <p className="text-[11px] text-gray-500">
+          Te enviaremos un enlace de seguridad.
         </p>
 
-        <button className="mt-3 border border-[#DE4B52] text-[#DE4B52] px-4 py-2 rounded-lg text-xs font-semibold">
-          Solicitar cambio
+        <button
+          type="button"
+          onClick={() => setCorreoEnviado(true)}
+          className={`mt-3 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            correoEnviado
+              ? "bg-green-100 text-green-600 border border-green-200"
+              : "bg-white border border-[#DE4B52] text-[#DE4B52] hover:bg-[#DE4B52] hover:text-white"
+          }`}
+        >
+          {correoEnviado ? "✓ Enlace enviado" : "Solicitar cambio"}
         </button>
       </div>
-    </div>
+    </form>
   );
 };
 
-// MAIN
 const PerfilUsuario = () => {
+  const usuario = {
+    nombre: "María Fernández",
+    email: "maria.fernandez@gmail.com",
+    miembro: "Miembro Gold",
+    desde: "Enero 2023",
+    iniciales: "MF",
+    pedidos: 12,
+    puntos: 850,
+  };
+
   return (
     <div className="bg-[#FAF8F5] min-h-screen flex flex-col">
       <NavBar />
 
       <main className="flex-1">
+
         {/* HEADER */}
-        <div
-          className="bg-gradient-to-r from-[#E8949B] via-[#E8A0A8] to-[#D4A574]
-          px-4 sm:px-6 md:px-10 py-6 flex flex-col md:flex-row items-center gap-6"
-        >
-          {/* Avatar */}
-          <div
-            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center 
-            text-xl font-bold text-[#E8949B] border-4 border-white/60"
-          >
-            {usuario.iniciales}
-          </div>
+        <div className="bg-gradient-to-r from-[#E8949B] to-[#D4A574] px-6 py-10">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-6">
 
-          {/* Info */}
-          <div className="text-center md:text-left flex-1">
-            <h2 className="text-lg sm:text-xl font-bold text-white">
-              {usuario.nombre}
-            </h2>
-            <p className="text-xs sm:text-sm text-white/80">
-              {usuario.email} · Desde {usuario.desde}
-            </p>
+            <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center text-3xl font-serif text-[#E8949B] border-4 border-white/30 shadow-lg">
+              {usuario.iniciales}
+            </div>
 
-            <span className="inline-block mt-2 text-xs font-bold bg-white/30 text-white px-3 py-1 rounded-full">
-              ✦ {usuario.miembro}
-            </span>
-          </div>
+            <div className="text-center md:text-left flex-1">
+              <h2 className="text-2xl font-bold text-white">
+                {usuario.nombre}
+              </h2>
+              <p className="text-white/80 text-sm">
+                {usuario.email} • Cliente desde {usuario.desde}
+              </p>
 
-          {/* Stats */}
-          <div className="flex gap-4">
-            <Stat val={usuario.pedidos} label="Pedidos" />
-            <Stat val={usuario.puntos} label="Puntos" />
+              <span className="inline-block mt-3 px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold text-white uppercase">
+                ✦ {usuario.miembro}
+              </span>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="bg-white/10 p-4 rounded-2xl text-center min-w-[90px]">
+                <p className="text-xl font-bold text-white">
+                  {usuario.pedidos}
+                </p>
+                <p className="text-[10px] text-white/70 uppercase">
+                  Pedidos
+                </p>
+              </div>
+
+              <div className="bg-white/10 p-4 rounded-2xl text-center min-w-[90px]">
+                <p className="text-xl font-bold text-white">
+                  {usuario.puntos}
+                </p>
+                <p className="text-[10px] text-white/70 uppercase">
+                  Puntos
+                </p>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        {/* LAYOUT */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-8 grid gap-6 lg:grid-cols-4">
+        {/* CONTENIDO */}
+        <div className="max-w-6xl mx-auto px-6 py-10 grid gap-8 lg:grid-cols-4">
+
           {/* SIDEBAR */}
           <aside className="lg:col-span-1">
-            {/* CONTENEDOR */}
-            <div className="flex lg:flex-col gap-4 overflow-x-auto lg:overflow-visible pb-2">
-              {/* TAB PERFIL */}
-              <div className="bg-white border border-[#E8D5CA] rounded-lg min-w-[180px]">
-                <div className="flex items-center gap-2 p-4 bg-[#F2E7E1] border-l-4 border-[#D4A574]">
-                  <User size={16} className="text-[#D4A574]" />
-                  <span className="text-sm font-bold text-[#6B5B4E]">
-                    Mi perfil
-                  </span>
-                </div>
+            <div className="bg-white border border-[#E8D5CA] rounded-2xl shadow-sm">
+
+              <div className="p-4 bg-[#F2E7E1] flex items-center gap-3">
+                <User size={18} />
+                <span className="font-bold text-sm">Mi Perfil</span>
               </div>
+              <Link
+                to="/login"
+                className="w-full p-4 text-left text-sm text-[#DE4B52] font-semibold flex items-center gap-3 hover:bg-[#FAF8F5] transition"
+              >
+                <LogOut size={18} />
+                Cerrar sesión
+              </Link>
 
-              {/* ESPACIO SOLO EN DESKTOP */}
-              <div className="hidden lg:block h-4"></div>
-
-              {/* BOTÓN LOGOUT */}
-              <button
-                className="
-                min-w-[180px]
-                flex items-center justify-center gap-2 
-                px-4 py-3 
-                border border-[#F5D6D8] 
-                rounded-lg 
-                bg-white 
-                text-[#DE4B52] 
-                text-sm font-semibold
-                hover:bg-[#FDECEC] 
-                transition
-                lg:mt-2
-                "
-                >
-                <LogOut size={16} />
-                <Link to="/login">
-                    Cerrar sesión
-                </Link>
-              </button>
             </div>
           </aside>
 
-          {/* CONTENIDO */}
-          <section className="lg:col-span-3 bg-white border border-[#E8D5CA] rounded-xl p-4 sm:p-6">
+          {/* FORM */}
+          <section className="lg:col-span-3 bg-white border border-[#E8D5CA] rounded-[2.5rem] p-8 shadow-sm">
             <TabPerfil />
           </section>
+
         </div>
       </main>
 
       <Footer />
     </div>
   );
-}
+};
 
 export default PerfilUsuario;

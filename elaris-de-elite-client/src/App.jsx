@@ -9,6 +9,7 @@ import Novedades from "./pages/Novedades.jsx";
 import Resenias from "./pages/Reseñas.jsx";
 import Contacto from "./pages/Contacto.jsx";
 import TerminosCondiciones from "./pages/TerminosCondiciones.jsx";
+import Nosotros from "./pages/Nosotros.jsx";
 
 function App() {
   
@@ -27,6 +28,7 @@ function App() {
           <Route path="/reseñas" element={<Resenias/>}></Route>
           <Route path="/contactanos" element={<Contacto/>}></Route>
           <Route path="/terminosycondiciones" element={<TerminosCondiciones/>}></Route>
+          <Route path="/nosotros" element={<Nosotros/>}></Route>
         </Routes>
       </BrowserRouter>
     </>

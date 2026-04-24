@@ -175,8 +175,8 @@ const Login = () => {
                   value={registerData.direccion}
                   onChange={(e) => setRegisterData({ ...registerData, direccion: e.target.value })}
                 />
-                <Boton tipo="primario" anchoTotal>
-                  <Link to="/bienvenida">Crear cuenta</Link>
+                <Boton tipo="primario" anchoTotal onClick={() => {setVista("login"), cambiarTab("login")}}  >
+                  <Link to="/login">Crear cuenta</Link>
                 </Boton>
               </form>
             )}
@@ -188,6 +188,7 @@ const Login = () => {
                   label="Correo"
                   type="email"
                   value={forgotEmail}
+                  pattern=".+@gmail\.com"
                   onChange={(e) => setForgotEmail(e.target.value)}
                 />
                 <Boton tipo="primario" anchoTotal onClick={() => setVista('reset')}>
@@ -211,8 +212,8 @@ const Login = () => {
                   value={resetData.confirmar}
                   onChange={(e) => setResetData({ ...resetData, confirmar: e.target.value })}
                 />
-                <Boton tipo="primario" anchoTotal>
-                  <Link to="/bienvenida">Enviar</Link>
+                <Boton tipo="primario" anchoTotal onClick={() => {alert("Contraseña restablecida con éxito!"), setVista("login"), cambiarTab("login")}} >
+                  <Link to="/login">Enviar</Link>
                 </Boton>
               </form>
             )}
