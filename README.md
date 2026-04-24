@@ -20,7 +20,7 @@
 
 - **Andrea Alejandra Portillo Salegio**  
   Código: 20230787  
-  Usuarios: EduardoCastro29, DouHorvst, Davisito1  
+  Usuarios: EduardoCastro29, DouHorvst, Davisito1, Andrea-Salegio
   _Nota: realizó contribuciones a la rama principal desde diferentes computadoras con distintos usuarios de GitHub._
 
 ---
