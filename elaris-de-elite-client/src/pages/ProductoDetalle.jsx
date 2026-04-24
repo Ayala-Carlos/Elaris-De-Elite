@@ -118,6 +118,7 @@ const ProductoDetalle = () => {
   const [reseñas, setReseñas] = useState(reseñasIniciales);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [nuevaReseña, setNuevaReseña] = useState({ rating: 0, comentario: "" });
+  const [cantidad, setCantidad] = useState(1);
 
   if (!producto) {
     return <div>Producto no encontrado</div>;
@@ -206,11 +207,17 @@ const ProductoDetalle = () => {
 
             {/* Cantidad */}
             <div className="flex items-center gap-4 mb-6">
-              <button className="w-8 h-8 border rounded-full flex items-center justify-center">
+              <button
+                className="w-8 h-8 border rounded-full flex items-center justify-center"
+                onClick={() => cantidad > 1 && setCantidad(cantidad - 1)}
+              >
                 <Minus size={14} />
               </button>
-              <span>1</span>
-              <button className="w-8 h-8 border rounded-full flex items-center justify-center">
+              <span>{cantidad}</span>
+              <button
+                className="w-8 h-8 border rounded-full flex items-center justify-center"
+                onClick={() => setCantidad(cantidad + 1)}
+              >
                 <Plus size={14} />
               </button>
             </div>

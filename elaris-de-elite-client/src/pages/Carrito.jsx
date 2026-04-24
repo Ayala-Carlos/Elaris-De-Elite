@@ -15,7 +15,7 @@ const C = {
   crema: "#F2E7E1",
 };
 
-const productos = [
+const initialProductos = [
   { id: 1, categoria: "ACCESORIOS", nombre: "Set de brochas", precio: 150, cantidad: 1, img: SetBrochas },
   { id: 2, categoria: "LABIALES", nombre: "Dior Addict barra de labios brillante hidratante", precio: 52, cantidad: 1, img: LabialDior },
 ];
@@ -225,10 +225,56 @@ const ModalConfirmacion = ({ onClose }) => (
 const Carrito = () => {
   const [modalPago, setModalPago] = useState(false);
   const [modalConfirm, setModalConfirm] = useState(false);
+  const [productosState, setProductosState] = useState(initialProductos);
+  const [codigo, setCodigo] = useState("");
+  const [codigoAplicado, setCodigoAplicado] = useState(null);
+  const [codigoError, setCodigoError] = useState("");
 
   const handleSuccess = () => {
     setModalPago(false);
     setModalConfirm(true);
+  };
+
+  const handleIncrement = (id) => {
+    setProductosState((prev) => prev.map(p => p.id === id ? { ...p, cantidad: p.cantidad + 1 } : p));
+  };
+
+  const handleDecrement = (id) => {
+    setProductosState((prev) => prev.map(p => p.id === id ? { ...p, cantidad: Math.max(1, p.cantidad - 1) } : p));
+  };
+
+  const handleRemove = (id) => {
+    setProductosState((prev) => prev.filter(p => p.id !== id));
+  };
+
+  const handleClear = () => {
+    setProductosState([]);
+    setCodigoAplicado(null);
+    setCodigo("");
+    setCodigoError("");
+  };
+
+  // totals
+  const subtotal = productosState.reduce((s, p) => s + p.precio * p.cantidad, 0);
+  const iva = +(subtotal * 0.16).toFixed(2);
+  const descuento = codigoAplicado ? +(subtotal * 0.2).toFixed(2) : 0;
+  const total = +(subtotal - descuento + iva).toFixed(2);
+
+  const validCodes = ["DESCUENTO20", "AHORRA20"];
+
+  const applyCodigo = () => {
+    setCodigoError("");
+    if (!codigo.trim()) {
+      setCodigoError("Introduce un código de descuento");
+      return;
+    }
+    if (!validCodes.includes(codigo.trim().toUpperCase())) {
+      setCodigoError("Código inválido");
+      setCodigoAplicado(null);
+      return;
+    }
+    setCodigoAplicado(codigo.trim().toUpperCase());
+    setCodigoError("");
   };
 
   return (
@@ -244,12 +290,15 @@ const Carrito = () => {
         </div>
 
         {/* Título */}
-        <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[#6B5B4E]">Carrito de compras</h1>
-            <p className="text-xs text-gray-400">2 artículos en el carrito</p>
+            <p className="text-xs text-gray-400">{productosState.length} artículos en el carrito</p>
           </div>
-          <button className="flex items-center gap-2 text-[#DE4B52] text-sm font-semibold">
+          <button
+            onClick={handleClear}
+            className="flex items-center gap-2 text-[#DE4B52] text-sm font-semibold"
+          >
             <Trash2 size={16} />
             Vaciar carrito de compras
           </button>
@@ -260,7 +309,7 @@ const Carrito = () => {
 
           {/* Lista productos */}
           <div className="md:col-span-2 space-y-6">
-            {productos.map((p) => (
+            {productosState.map((p) => (
               <div key={p.id} className="flex gap-4 bg-white p-4 rounded-xl shadow-sm border border-[#E8D5CA]">
                 <img src={p.img} alt={p.nombre} className="w-28 h-24 object-cover rounded-lg" />
                 <div className="flex-1">
@@ -268,13 +317,13 @@ const Carrito = () => {
                   <h3 className="text-sm font-semibold text-[#6B5B4E] mb-3">{p.nombre}</h3>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <button className="w-8 h-8 rounded-full border border-[#E8D5CA] flex items-center justify-center"><Minus size={14} /></button>
+                      <button onClick={() => handleDecrement(p.id)} className="w-8 h-8 rounded-full border border-[#E8D5CA] flex items-center justify-center"><Minus size={14} /></button>
                       <span className="text-sm font-semibold text-[#6B5B4E]">{p.cantidad}</span>
-                      <button className="w-8 h-8 rounded-full border border-[#E8D5CA] flex items-center justify-center"><Plus size={14} /></button>
+                      <button onClick={() => handleIncrement(p.id)} className="w-8 h-8 rounded-full border border-[#E8D5CA] flex items-center justify-center"><Plus size={14} /></button>
                     </div>
                     <div className="flex items-center gap-4">
-                      <p className="font-semibold text-[#6B5B4E]">${p.precio.toFixed(2)}</p>
-                      <Trash2 size={16} className="text-[#DE4B52] cursor-pointer" />
+                      <p className="font-semibold text-[#6B5B4E]">${(p.precio * p.cantidad).toFixed(2)}</p>
+                      <Trash2 onClick={() => handleRemove(p.id)} size={16} className="text-[#DE4B52] cursor-pointer" />
                     </div>
                   </div>
                 </div>
@@ -286,16 +335,21 @@ const Carrito = () => {
           <div className="bg-white p-6 rounded-xl shadow-sm border border-[#E8D5CA] h-fit">
             <h2 className="text-lg font-bold text-[#6B5B4E] mb-4">Resumen del pedido</h2>
             <div className="space-y-2 text-sm mb-4">
-              <div className="flex justify-between text-[#6B5B4E]"><span>Subtotal</span><span>$235.00</span></div>
+              <div className="flex justify-between text-[#6B5B4E]"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
               <div className="flex justify-between text-[#6B5B4E]"><span>Envío</span><span>Gratis</span></div>
-              <div className="flex justify-between text-[#6B5B4E] border-b pb-2"><span>IVA (16%)</span><span>$37.60</span></div>
-              <div className="flex justify-between font-bold text-[#6B5B4E] pt-2"><span>Total</span><span>$272.60</span></div>
+              {codigoAplicado && (
+                <div className="flex justify-between text-[#6B5B4E]"><span>Descuento ({codigoAplicado})</span><span>-${descuento.toFixed(2)}</span></div>
+              )}
+              <div className="flex justify-between text-[#6B5B4E] border-b pb-2"><span>IVA (16%)</span><span>${iva.toFixed(2)}</span></div>
+              <div className="flex justify-between font-bold text-[#6B5B4E] pt-2"><span>Total</span><span>${total.toFixed(2)}</span></div>
             </div>
 
-            <div className="flex gap-2 mb-4">
-              <input placeholder="Ingrese el código" className="flex-1 px-3 py-2 rounded-lg bg-[#F2E7E1] text-sm outline-none" />
-              <Boton tipo="secundario" className="px-4 py-2 text-sm text-black-500">Aplicar</Boton>
+            <div className="flex gap-2 mb-2">
+              <input value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Ingrese el código" className="flex-1 px-3 py-2 rounded-lg bg-[#F2E7E1] text-sm outline-none" />
+              <Boton tipo="secundario" onClick={applyCodigo} className="px-4 py-2 text-sm text-black-500">Aplicar</Boton>
             </div>
+            {codigoError && <p className="text-[12px] text-[#DE4B52] mb-2">{codigoError}</p>}
+            {codigoAplicado && <p className="text-[12px] text-green-600 mb-2">Código {codigoAplicado} aplicado — 20% de descuento</p>}
 
             {/* Botón que abre modal */}
             <button

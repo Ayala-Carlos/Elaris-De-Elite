@@ -35,7 +35,8 @@ const secciones = [
 ];
 
 const TerminosCondiciones = () => {
-  const [abierto, setAbierto] = useState(null);
+  // start with the first section open but allow toggling it closed
+  const [abierto, setAbierto] = useState(0);
 
   return (
     <div className="bg-[#FAF8F5] min-h-screen flex flex-col">
@@ -88,12 +89,6 @@ const TerminosCondiciones = () => {
                 </p>
               </div>
 
-              {/* Texto siempre visible si NO hay acordeón (primera tarjeta siempre abierta) */}
-              {i === 0 && abierto !== 0 && (
-                <p className="text-sm text-gray-500 leading-relaxed px-5 pb-5">
-                  {s.texto}
-                </p>
-              )}
             </div>
           ))}
         </div>

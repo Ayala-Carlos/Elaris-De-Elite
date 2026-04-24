@@ -21,6 +21,7 @@ const Campo = ({
   onChange,
   error,
   type = "text",
+  autoFocus = false,
 }) => (
   <div>
     <label className="text-xs font-semibold text-[#6B5B4E] block mb-1">
@@ -37,6 +38,7 @@ const Campo = ({
         value={value}
         disabled={!editando}
         onChange={(e) => onChange(fieldKey, e.target.value)}
+        autoFocus={autoFocus}
         className={`w-full pl-10 pr-3 py-2 rounded-lg text-sm outline-none transition-all
         ${
           error
@@ -58,6 +60,7 @@ const Campo = ({
 
 const TabPerfil = () => {
   const [editando, setEditando] = useState(false);
+  const [originalForm, setOriginalForm] = useState(null);
   const [correoEnviado, setCorreoEnviado] = useState(false);
   const [errores, setErrores] = useState({});
 
@@ -88,6 +91,7 @@ const TabPerfil = () => {
     }
 
     setEditando(false);
+    setOriginalForm(null);
     setErrores({});
   };
 
@@ -100,17 +104,35 @@ const TabPerfil = () => {
         </h3>
 
         {editando ? (
-          <button
-            type="submit"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-[#D4A574] text-white border border-[#D4A574] hover:bg-[#b88d5c] transition"
-          >
-            <Check size={14} /> Guardar
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="submit"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-[#D4A574] text-white border border-[#D4A574] hover:bg-[#b88d5c] transition"
+            >
+              <Check size={14} /> Guardar
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (originalForm) {
+                  setForm(originalForm);
+                }
+                setOriginalForm(null);
+                setErrores({});
+                setEditando(false);
+              }}
+              className="px-4 py-2 rounded-lg text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-[#FAF8F5] transition"
+            >
+              Cancelar
+            </button>
+          </div>
         ) : (
           <button
             type="button"
             onClick={() => {
-              console.log("CLICK EDITAR");
+
+              setOriginalForm(form);
               setEditando(true);
             }}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border border-[#D4A574] text-[#D4A574] hover:bg-[#FDF2EC] transition"
@@ -129,6 +151,7 @@ const TabPerfil = () => {
           value={form.nombre}
           editando={editando}
           onChange={handleInputChange}
+          autoFocus={editando}
         />
 
         <Campo
