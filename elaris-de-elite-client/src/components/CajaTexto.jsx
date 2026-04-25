@@ -5,6 +5,7 @@ const CajaTexto = ({
   value,
   onChange,
   className = "",
+  ...props
 }) => {
   return (
     <div className={`w-full ${className}`}>
@@ -19,6 +20,7 @@ const CajaTexto = ({
         placeholder={placeholder}
         value={value || ""}
         onChange={onChange}
+        {...props}
         className="w-full px-4 py-3 rounded-2xl bg-[#f9f4ef] border-none focus:ring-2 focus:ring-[#d4ac80] outline-none transition-all"
       />
     </div>

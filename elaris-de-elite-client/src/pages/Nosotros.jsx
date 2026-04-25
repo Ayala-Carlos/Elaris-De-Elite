@@ -1,25 +1,18 @@
 import React from "react";
 import Navbar from "../components/BarraNavegacion.jsx";
 import Footer from "../components/Footer.jsx";
+import Encabezado from "../components/Encabezado.jsx";
 
 const Nosotros = () => {
   return (
     <div className="bg-[#FAF8F5] min-h-screen flex flex-col font-sans text-[#6B5B4E]">
       <Navbar />
-
-      <main className="flex-1 max-w-5xl mx-auto px-6 py-16">
-        
-        {/* Encabezado Simple */}
-        <div className="text-center mb-10">
-          <p className="text-[#D4A574] text-sm mb-2">Nuestra esencia</p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#6B5B4E] mb-3">
-            Sobre Élaris de Élite
-          </h1>
-          <p className="text-sm text-gray-500 max-w-xl mx-auto">
-            Descubre la esencia de Élaris de Élite, una marca de maquillaje premium que celebra la belleza auténtica y el empoderamiento femenino.
-          </p>
-        </div>
-
+      <br />
+      <main className="flex-1 max-w-5xl mx-auto px-6 py-16 -mt-10">
+        <Encabezado textoSuperior="Nuestra esencia"
+          titulo="Sobre Nosotros"
+          textoInferior="Descubre la esencia de Élaris de Élite, una marca de maquillaje premium que celebra la belleza auténtica y el empoderamiento femenino." >
+        </Encabezado>
         {/* Sección de Texto*/}
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100">

@@ -16,12 +16,14 @@ const Boton = ({
   children,       
   tipo = "primario",
   anchoTotal = false, 
+  type = "button",
   onClick,        
   className = ""  
 }) => {
   
   return (
     <button
+      type={type}
       onClick={onClick}
       className={`
         flex items-center justify-center

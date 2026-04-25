@@ -27,7 +27,7 @@ const Footer = () => {
         </div>
 
         {/* Brand */}
-        <div className="flex flex-col items-center text-center px-4">
+        <div className="flex flex-col items-center text-center px-4 mb-6 md:mb-0">
           <h1 className="text-2xl md:text-3xl font-bold text-[#DE4B52] tracking-widest font-serif">
             ÉLARIS DE ÉLITE
           </h1>
@@ -42,7 +42,7 @@ const Footer = () => {
         </div>
 
         {/* Contact */}
-        <div className="lg:pl-6 max-w-xs mx-auto md:mx-0">
+        <div className="lg:pl-6 max-w-xs mx-auto md:mx-0 lg:ml-auto">
           <h3 className="font-bold mb-4 text-[#7a2530]">Contáctenos</h3>
 
           <div className="space-y-2 text-sm text-white">

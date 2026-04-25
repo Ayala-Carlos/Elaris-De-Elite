@@ -3,6 +3,7 @@ import React from "react";
 import Navbar from "../components/BarraNavegacion.jsx";
 import Footer from "../components/Footer.jsx";
 import TarjetaNovedad from "../components/TarjetaNovedad.jsx";
+import Encabezado from "../components/Encabezado.jsx";
 
 // Imágenes
 import Novedad1 from "../img/Novedad1.png";
@@ -41,16 +42,9 @@ const Novedades = () => {
         <div className="bg-[#FAF8F5] min-h-screen flex flex-col">
             <Navbar />
             <main className="flex-1 max-w-6xl mx-auto px-6 py-12 w-full">
-                {/* HEADER */}
-                <div className="text-center mb-12">
-                    <p className="text-[#D4A574] text-sm mb-2">Mantente informado</p>
-                    <h1 className="text-3xl font-bold text-[#6B5B4E] mb-3">
-                        Noticias y novedades
-                    </h1>
-                    <p className="text-sm text-gray-500 max-w-xl mx-auto">
-                        Las últimas tendencias, lanzamientos y consejos de belleza directamente para ti.
-                    </p>
-                </div>
+                <Encabezado textoSuperior="Mantente informado"
+                    titulo="Noticias y Novedades"
+                    textoInferior="Las últimas tendencias, lanzamientos y consejos de belleza directamente para ti." />
 
                 {/* DESTACADO */}
                 <div className="grid md:grid-cols-2 gap-6 mb-10">

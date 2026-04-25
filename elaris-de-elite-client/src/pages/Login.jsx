@@ -15,6 +15,8 @@ const Login = () => {
   });
   const [forgotEmail, setForgotEmail] = useState("");
   const [resetData, setResetData] = useState({ password: "", confirmar: "" });
+  const [forgotError, setForgotError] = useState('');
+  const [resetError, setResetError] = useState('');
 
   // Sincroniza la tab con la vista
   const cambiarTab = (tab) => {
@@ -25,6 +27,40 @@ const Login = () => {
   const volverAlLogin = () => {
     setVista('login');
     setActiveTab('login');
+  };
+
+  const validarEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const handleForgotSubmit = (e) => {
+    e.preventDefault();
+
+    if (!validarEmail(forgotEmail)) {
+      setForgotError('Ingresa un correo valido.');
+      return;
+    }
+
+    setForgotError('');
+    setVista('reset');
+  };
+
+  const handleResetSubmit = (e) => {
+    e.preventDefault();
+
+    if (!resetData.password || !resetData.confirmar) {
+      setResetError('Completa ambos campos de contrasena.');
+      return;
+    }
+
+    if (resetData.password !== resetData.confirmar) {
+      setResetError('Las contrasenas no coinciden.');
+      return;
+    }
+
+    setResetError('');
+    alert('Contrasena restablecida con exito!');
+    setResetData({ password: '', confirmar: '' });
+    setVista('login');
+    cambiarTab('login');
   };
 
   /* ── Títulos / subtítulos dinámicos ── */
@@ -183,15 +219,20 @@ const Login = () => {
 
             {/* ── FORMULARIO OLVIDÉ CONTRASEÑA ── */}
             {vista === 'forgot' && (
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+              <form className="space-y-6" onSubmit={handleForgotSubmit}>
                 <Input
                   label="Correo"
                   type="email"
                   value={forgotEmail}
-                  pattern=".+@gmail\.com"
-                  onChange={(e) => setForgotEmail(e.target.value)}
+                  onChange={(e) => {
+                    setForgotEmail(e.target.value);
+                    if (forgotError) setForgotError('');
+                  }}
                 />
-                <Boton tipo="primario" anchoTotal onClick={() => setVista('reset')}>
+                {forgotError && (
+                  <p className="text-xs text-red-500 -mt-3">{forgotError}</p>
+                )}
+                <Boton tipo="primario" anchoTotal type="submit">
                   Enviar
                 </Boton>
               </form>
@@ -199,21 +240,30 @@ const Login = () => {
 
             {/* ── FORMULARIO RESTABLECER CONTRASEÑA ── */}
             {vista === 'reset' && (
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+              <form className="space-y-6" onSubmit={handleResetSubmit}>
                 <Input
                   label="Contraseña"
                   type="password"
                   value={resetData.password}
-                  onChange={(e) => setResetData({ ...resetData, password: e.target.value })}
+                  onChange={(e) => {
+                    setResetData({ ...resetData, password: e.target.value });
+                    if (resetError) setResetError('');
+                  }}
                 />
                 <Input
                   label="Confirmar contraseña"
                   type="password"
                   value={resetData.confirmar}
-                  onChange={(e) => setResetData({ ...resetData, confirmar: e.target.value })}
+                  onChange={(e) => {
+                    setResetData({ ...resetData, confirmar: e.target.value });
+                    if (resetError) setResetError('');
+                  }}
                 />
-                <Boton tipo="primario" anchoTotal onClick={() => {alert("Contraseña restablecida con éxito!"), setVista("login"), cambiarTab("login")}} >
-                  <Link to="/login">Enviar</Link>
+                {resetError && (
+                  <p className="text-xs text-red-500 -mt-3">{resetError}</p>
+                )}
+                <Boton tipo="primario" anchoTotal type="submit">
+                  Enviar
                 </Boton>
               </form>
             )}

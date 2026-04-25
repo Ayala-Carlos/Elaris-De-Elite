@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Navbar from "../components/BarraNavegacion.jsx";
 import Footer from "../components/Footer.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
+import Encabezado from "../components/Encabezado.jsx";
 
 // Imágenes
 import BasePremiun from "../img/BasePremiunPinkFly.png";
@@ -21,7 +22,6 @@ const productos = [
 ];
 
 const categorias = ["TODOS", "LABIALES", "OJOS", "ROSTRO", "ACCESORIOS", "FRAGANCIAS"];
-const precios = ["TODOS", "MENOR_75", "ENTRE_75_100"];
 
 const Productos = () => {
   const [categoriaActiva, setCategoriaActiva] = useState("TODOS");
@@ -46,16 +46,10 @@ const Productos = () => {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-10 py-10">
 
-        {/* HEADER */}
-        <div className="text-center mb-10">
-          <p className="text-[#D4A574] text-sm mb-2">Nuestra colección</p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#6B5B4E] mb-3">
-            Productos de Lujo
-          </h1>
-          <p className="text-sm text-gray-500 max-w-xl mx-auto">
-            Descubre nuestra exclusiva selección de maquillaje de alta gama.
-          </p>
-        </div>
+        <Encabezado textoSuperior="Nuestra colección"
+          titulo="Productos de Lujo"
+          textoInferior="Descubre nuestra exclusiva selección de maquillaje de alta gama.">
+        </Encabezado>
 
         <div className="grid gap-8 lg:grid-cols-4">
 
