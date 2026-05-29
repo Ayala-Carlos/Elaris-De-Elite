@@ -1,6 +1,7 @@
 //Import express
 import express from 'express';
 
+import discountCodesRoutes from './src/routes/discountCodes.js';
 import limiter from './src/middlewares/limiter.js';
 
 import cors from 'cors'; 
@@ -26,6 +27,6 @@ app.use(express.json());
 app.use(limiter);
 
 //Create the endpoints
-
+app.use('/api/discountCodes', discountCodesRoutes);
 
 export default app;
