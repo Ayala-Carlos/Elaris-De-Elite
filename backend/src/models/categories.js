@@ -17,5 +17,5 @@ const categoriesSchema = new Schema({
     strict: false
 })
 
-//"discountCodes" is the name of the collection that is saved in the DB
-export default model("discountCodes", discountCodeSchema)
+//"categories" is the name of the collection that is saved in the DB
+export default model("categories", categoriesSchema)

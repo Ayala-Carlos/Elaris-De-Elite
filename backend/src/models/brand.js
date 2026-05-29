@@ -8,7 +8,7 @@
 
 import { Schema, model } from "mongoose"
 
-const bannerSchema = new Schema({
+const brandSchema = new Schema({
     name:{
         type: String
     },
@@ -33,5 +33,5 @@ const bannerSchema = new Schema({
     strict: false
 })
 
-//"Banners" is the name of the collection that is saved in the DB
-export default model("Banners", bannerSchema)
+//"brand" is the name of the collection that is saved in the DB
+export default model("brand", brandSchema)
