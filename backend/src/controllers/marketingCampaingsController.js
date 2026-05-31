@@ -38,22 +38,23 @@ marketingCampaingsController.updateMarketingCampaings = async (req, res) => {
       {
         //Buscamos el campaign por su id y actualizamos los datos
         campaingName,
-      platform,
-      assignedBudget,
-      description,
-      startDate,
-      endDate,
-      status
-    },
-    { new: true },
-  );
+        platform,
+        assignedBudget,
+        description,
+        startDate,
+        endDate,
+        status
+      },
+      { new: true },
+    );
 
-  //Si se actualizan los datos enviamos un mensaje de confirmación
-  res.status(200).json({ message: "Marketing campaign updated" });
-} catch (error) {
-  console.log("error: " + error);
-  res.status(500).json({ message: "Error updating marketing campaign" });
-}
+    //Si se actualizan los datos enviamos un mensaje de confirmación
+    res.status(200).json({ message: "Marketing campaign updated" });
+  } catch (error) {
+    console.log("error: " + error);
+    res.status(500).json({ message: "Error updating marketing campaign" });
+  }
+};
 
 //DELETE
 marketingCampaingsController.deleteMarketingCampaings = async (req, res) => {
@@ -82,6 +83,7 @@ marketingCampaingsController.getMarketingCampaignById = async (req, res) => {
     res.status(500).json({ message: "Error finding marketing campaign" });
   }
 };
+
 //Search for marketing campaign name
 marketingCampaingsController.searchByName = async (req, res) => {
   try {
@@ -119,9 +121,7 @@ marketingCampaingsController.lowBudget = async (req, res) => {
     return res.status(200).json(marketingCampaings);
   } catch (error) {
     console.log("error: " + error);
-    res
-      .status(500)
-      .json({ message: "Error searching marketing campaigns with low budget" });
+    res.status(500).json({ message: "Error searching marketing campaigns with low budget" });
   }
 };
 
@@ -144,20 +144,20 @@ marketingCampaingsController.searchByBudgetRange = async (req, res) => {
     return res.status(200).json(marketingCampaings);
   } catch (error) {
     console.log("error: " + error);
-    res.status(500).json({ message: "Error searching marketing campaigns by budget range"});
+    res.status(500).json({ message: "Error searching marketing campaigns by budget range" });
   }
 };
 
 //Count how many items (products in this case) are in the bd table
-marketingCampaingsController.countMarketingCampaings = async(req, res) => {
-    try {
-        const count = await marketingCampaingsModel.countDocuments(); 
+marketingCampaingsController.countMarketingCampaings = async (req, res) => {
+  try {
+    const count = await marketingCampaingsModel.countDocuments();
 
-        return res.status(200).json(count);
-    } catch (error) {
-        console.log("error: " + error)
-        return res.status(500).json({message: "Internal Server error"})
-    }
+    return res.status(200).json(count);
+  } catch (error) {
+    console.log("error: " + error);
+    return res.status(500).json({ message: "Internal Server error" });
+  }
 };
 
-export default  marketingCampaingsController;
+export default marketingCampaingsController;
