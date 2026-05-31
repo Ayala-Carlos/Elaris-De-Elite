@@ -3,6 +3,9 @@ import express from 'express';
 
 import discountCodesRoutes from './src/routes/discountCodes.js';
 import marketingCampaingsRoutes from './src/routes/marketingCampaings.js';
+import brandRoutes from './src/routes/brand.js';
+import categoriesRoutes from './src/routes/categories.js';
+import customerRoutes from './src/routes/customer.js';
 import limiter from './src/middlewares/limiter.js';
 
 import cors from 'cors'; 
@@ -30,5 +33,8 @@ app.use(limiter);
 //Create the endpoints
 app.use('/api/discountCodes', discountCodesRoutes);
 app.use('/api/marketingCampaings', marketingCampaingsRoutes);
+app.use('/api/brands', brandRoutes);
+app.use('/api/categories', categoriesRoutes);
+app.use('/api/customers', customerRoutes);
 
 export default app;
