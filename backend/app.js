@@ -6,6 +6,10 @@ import marketingCampaingsRoutes from './src/routes/marketingCampaings.js';
 import brandRoutes from './src/routes/brand.js';
 import categoriesRoutes from './src/routes/categories.js';
 import customerRoutes from './src/routes/customer.js';
+import loginCustomerRoutes from './src/routes/loginCustomer.js';
+import customerRecoveryPasswordRoutes from './src/routes/customerRecoveryPassword.js';
+import registersCustomersRoutes from './src/routes/registerCustomers.js';
+import logoutRoutes from './src/routes/logout.js';
 import limiter from './src/middlewares/limiter.js';
 
 import cors from 'cors'; 
@@ -36,5 +40,9 @@ app.use('/api/marketingCampaings', marketingCampaingsRoutes);
 app.use('/api/brands', brandRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/customers', customerRoutes);
+app.use('/api/login', loginCustomerRoutes);
+app.use('/api/recoveryPassword', customerRecoveryPasswordRoutes);
+app.use('/api/logout', logoutRoutes);
+app.use("/api/registerCustomers", registersCustomersRoutes);
 
 export default app;
