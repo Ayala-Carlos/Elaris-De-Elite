@@ -2,3 +2,7 @@
 .env
 *.env
 node_modules
+postman_collection.json
+postman 
+workspace.postman_globals.json
+workspace.postman_environment.json
