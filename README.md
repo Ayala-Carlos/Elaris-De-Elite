@@ -8,7 +8,8 @@
 
 - **Mario Iván Vásquez Cruz**  
   Código: 20210050  
-  Usuario: MarioIvan44  
+  Usuario: MarioIvan44, Joshua-Alfredo-Flores-Deleon
+   _Nota: realizó contribuciones a la rama principal desde diferentes computadoras con distintos usuarios de GitHub._
 
 - **Julio Josué Pérez Rodríguez**  
   Código: 20210261  
