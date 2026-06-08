@@ -11,7 +11,7 @@ import loginCustomerRoutes from './src/routes/loginCustomer.js';
 import customerRecoveryPasswordRoutes from './src/routes/customerRecoveryPassword.js';
 import registersCustomersRoutes from './src/routes/registerCustomers.js';
 import logoutRoutes from './src/routes/logout.js';
-import cartController from './src/controllers/cartController.js';
+import cartRoutes from './src/routes/cart.js';
 import ordersRoutes from './src/routes/orders.js';
 import limiter from './src/middlewares/limiter.js';
 
@@ -48,7 +48,7 @@ app.use('/api/login', loginCustomerRoutes);
 app.use('/api/recoveryPassword', customerRecoveryPasswordRoutes);
 app.use('/api/logout', logoutRoutes);
 app.use('/api/registerCustomers', registersCustomersRoutes);
-app.use('/api/cart', cartController)
+app.use('/api/cart', cartRoutes)
 app.use('/api/orders', ordersRoutes);
 
 export default app;

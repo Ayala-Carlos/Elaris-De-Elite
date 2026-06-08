@@ -10,7 +10,7 @@ router.route("/")
 
 //Additional endpoints for specific category operations
 
-router.route("/searchByCode").post(categoriesController.searchByCodeAndIsAvailable)
+router.route("/searchByName").post(categoriesController.searchByName)
 
 router.route("/count").get(categoriesController.countCategories)
 

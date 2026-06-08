@@ -69,11 +69,11 @@ categoriesController.deleteCategory = async(req, res) => {
     res.json({message: "Category deleted"})
 }
 
-categoriesController.searchByCodeAndIsAvailable = async(req, res) => {
-    //This endpoint is used to search a discount code by its code and check if it is available, this is useful for the checkout process to apply the discount code to the order
+categoriesController.searchByName = async(req, res) => {
+    //This endpoint is used to search a category by its name
     try{
         const {name} = req.body; //Request the name of the category that we want to search
-        const category = await CategoriesModel.findOne({name: name.trim().toLowerCase()}) //Find the category by its name, we trim and convert to lowercase to have a consistent format for the category names
+        const category = await CategoriesModel.findOne({name: name.trim()}) //Find the category by its name, we trim and convert to lowercase to have a consistent format for the category names
         if(!category){ 
             return res.status(404).json({message: "Category not found"})
         } //If the category is not found, show a message of error
