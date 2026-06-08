@@ -92,15 +92,18 @@ cartController.createCart = async (req, res) => {
       });
     }
 
-    //Discount amount
-    if (discountAmount && discountAmount > total) {
+    // Validate that the discount amount is between 0 and 100 if it is provided
+    if (discountAmount < 0 || discountAmount > 100) {
       return res.status(400).json({
-        message: `El descuento (${discountAmount}) no puede ser mayor que el total de los productos (${total}).`,
+        message: "El porcentaje de descuento debe estar entre 0 y 100.",
       });
     }
 
-    // Aplicamos el descuento al total final
-    const finalTotal = total - (discountAmount || 0);
+    // Calculate the discount value based on the total and the discount percentage
+    const discountValue = (total * (discountAmount || 0)) / 100;
+
+    // finalTotal is the total after applying the discount
+    const finalTotal = total - discountValue;
 
     //////////////// End of the calculation of subtotal and total ///////////////
 
@@ -110,7 +113,7 @@ cartController.createCart = async (req, res) => {
       products: newProducts, //We save the new products array with the subtotal calculated for each product
       totalAmount: finalTotal, //We save the total calculated for the cart
       lastUpdated,
-      discountAmount: discountAmount || 0,
+      discountAmount: discountValue, //We save the discount value calculated for the cart
       loyaltyPointsUsed,
     });
 
@@ -141,15 +144,12 @@ cartController.updateCart = async (req, res) => {
     let newProducts = [];
 
     for (let i = 0; i < products.length; i++) {
-
       const productsFound = await productsModel.findById(products[i].productId); // Search the product in the database to get the price and calculate the subtotal
 
       if (!productsFound) {
-        return res
-          .status(404)
-          .json({
-            message: `Product with ID ${products[i].productId} not found`,
-          });
+        return res.status(404).json({
+          message: `Product with ID ${products[i].productId} not found`,
+        });
       }
 
       console.log(productsFound);
@@ -169,33 +169,41 @@ cartController.updateCart = async (req, res) => {
       });
     }
 
-    if (discountAmount && discountAmount > total) {
-      return res.status(400).json({ 
-        message: `El descuento (${discountAmount}) no puede ser mayor que el total de los productos (${total}).` 
+    // Validate that the discount amount is between 0 and 100 if it is provided
+    if (discountAmount < 0 || discountAmount > 100) {
+      return res.status(400).json({
+        message: "El porcentaje de descuento debe estar entre 0 y 100.",
       });
     }
 
-    // Aplicamos el descuento al total final
-    const finalTotal = total - (discountAmount || 0);
+    // Calculate the discount value based on the total and the discount percentage
+    const discountValue = (total * (discountAmount || 0)) / 100;
+
+    // finalTotal is the total after applying the discount
+    const finalTotal = total - discountValue;
 
     //////////////// End of the calculation of subtotal and total ///////////////
 
     //Create the new cart updated with the data received and the total calculated
-    const newCartUpdated = new cartModel({
+    const cartUpdatedData = {
       customerId,
-      products: newProducts, //We save the new products array with the subtotal calculated for each product
-      totalAmount: finalTotal, //We save the total calculated for the cart
+      products: newProducts,
+      totalAmount: finalTotal,
       lastUpdated,
-      discountAmount: discountAmount || 0,
+      discountAmount: discountValue,
       loyaltyPointsUsed,
-    });
+    };
 
-    cartModel.findByIdAndUpdate(
+    const updatedCart = await cartModel.findByIdAndUpdate(
       req.params.id,
-      newCartUpdated, //We send the new cart updated with the data received and the total calculated
+      cartUpdatedData,
       { new: true },
     );
 
+    if(!updatedCart){
+        return res.status(404).json({ message: "Cart not found" });
+    }
+    
     //If the cart is updated successfully, send a confirmation message
     return res.status(200).json({ message: "Cart updated successfully" });
   } catch (error) {
