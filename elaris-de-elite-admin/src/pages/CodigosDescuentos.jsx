@@ -52,37 +52,24 @@ export default function CodigosDescuento() {
     }
   };
 
-  const handleActualizar = async (id, datosActualizados) => {
-    try {
-      const codigoActualizado = await apiRequest(`/discountCodes/${id}`, {
-        method: "PUT", // o PATCH según tu API
-        body: datosActualizados,
-      });
-
-      setCodigosList((prev) =>
-        prev.map((codigo) => (codigo._id === id ? codigoActualizado : codigo)),
-      );
-
-      alert("Código actualizado correctamente");
-    } catch (err) {
-      alert("Error al actualizar: " + err.message);
-    }
-  };
-
   const codigosFiltrados = codigosList.filter((item) => {
-    const codigo = item.code || item.codigo || "";
-    const activo = item.isAvailable !== false && item.estado !== "Expirado";
+    const codigo = item.code || "";
+    const activo = item.isActive === true;
+
     const coincideTexto = codigo
       .toLowerCase()
-      .includes(textoBusqueda.toLowerCase());
-    const coincideEstado =
+      .includes(textoBusqueda.toLowerCase()); 
+
+    const coincideEstado = 
       filtroEstado === "Todos" ||
       (filtroEstado === "Activos" && activo) ||
       (filtroEstado === "Expirados" && !activo);
+
     return coincideTexto && coincideEstado;
   });
 
-  const activos = codigosList.filter((c) => c.isAvailable !== false).length;
+  const activos = codigosList.filter((c) => c.isActive === true).length;
+
   const expirados = codigosList.length - activos;
 
   return (
@@ -162,7 +149,7 @@ export default function CodigosDescuento() {
                 const fecha = item.expirationDate
                   ? new Date(item.expirationDate).toLocaleDateString("es-SV")
                   : item.fechaExpiracion || "—";
-                const activo = item.isAvailable !== false;
+                const activo = item.isActive === true;
                 const limiteUso = item.usageLimit || item.limiteUso || "—";
 
                 return (
