@@ -6,11 +6,17 @@ import TopNavbar from "../components/BarraNavegacion.jsx";
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
 
 async function apiRequest(path, options = {}) {
+  const isFormData = options.body instanceof FormData;
   const response = await fetch(`${API_URL}${path}`, {
     credentials: "include",
-    headers: options.body instanceof FormData ? options.headers : { "Content-Type": "application/json", ...(options.headers || {}) },
+    headers: isFormData
+      ? {} // No pongas Content-Type con FormData, el browser lo pone solo con el boundary
+      : { "Content-Type": "application/json", ...(options.headers || {}) },
     ...options,
-    body: options.body && !(options.body instanceof FormData) ? JSON.stringify(options.body) : options.body,
+    body:
+      options.body && !isFormData
+        ? JSON.stringify(options.body)
+        : options.body,
   });
 
   const data = await response.json();
@@ -18,19 +24,30 @@ async function apiRequest(path, options = {}) {
   return data;
 }
 
-async function resolveIdByName(path, fieldName, name) {
+async function resolveIdByName(path, name) {
   const records = await apiRequest(path);
   const normalizedName = String(name ?? "").trim().toLowerCase();
   const match = Array.isArray(records)
-    ? records.find((item) => String(item[fieldName] ?? item.name ?? item.nombre ?? "").trim().toLowerCase() === normalizedName)
+    ? records.find(
+        (item) =>
+          String(item.name ?? item.nombre ?? "")
+            .trim()
+            .toLowerCase() === normalizedName
+      )
     : null;
-
   return match?._id ?? null;
 }
 
 const initialForm = {
-  nombre: "", categoria: "", precio: "", marca: "",
-  cantidad: "", size: "", color: "", descripcion: "", imagen: null,
+  nombre: "",
+  categoria: "",
+  precio: "",
+  marca: "",
+  cantidad: "",
+  size: "",
+  color: "",
+  descripcion: "",
+  imagen: null,
 };
 
 export default function AgregarProducto() {
@@ -80,46 +97,61 @@ export default function AgregarProducto() {
     if (!form.cantidad.trim()) newErrors.cantidad = "La cantidad es requerida";
     if (!form.size.trim()) newErrors.size = "El tamaño es requerido";
     if (!form.color.trim()) newErrors.color = "El color es requerido";
-    if (caracteristicasList.length === 0) newErrors.caracteristicas = "Agrega al menos una característica";
+    if (caracteristicasList.length === 0)
+      newErrors.caracteristicas = "Agrega al menos una característica";
     return newErrors;
   };
 
   const handleSubmit = async () => {
     const newErrors = validate();
-    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
     setLoading(true);
     setApiError("");
+
     try {
-      const formData = new FormData();
-      const categoryId = await resolveIdByName("/categories", "name", form.categoria);
-      const brandId = await resolveIdByName("/brands", "name", form.marca);
+      // Resuelve IDs buscando por nombre en los endpoints correctos
+      const categoryId = await resolveIdByName("/categories", form.categoria);
+      const brandId = await resolveIdByName("/brands", form.marca);
 
       if (!categoryId) {
-        throw new Error("No se encontró la categoría seleccionada.");
+        throw new Error(
+          `No se encontró la categoría "${form.categoria}". Verifica que exista.`
+        );
       }
-
       if (!brandId) {
-        throw new Error("No se encontró la marca seleccionada.");
+        throw new Error(
+          `No se encontró la marca "${form.marca}". Verifica que exista.`
+        );
       }
 
-      formData.append("name", form.nombre);
+      const formData = new FormData();
+      formData.append("name", form.nombre.trim());
       formData.append("idCategory", categoryId);
       formData.append("idBrand", brandId);
       formData.append("price", form.precio);
       formData.append("stock", form.cantidad);
-      formData.append("size", form.size);
-      formData.append("color", form.color);
-      formData.append("description", form.descripcion);
-      if (caracteristicasList.length > 0)
-        formData.append("mainFeatures", JSON.stringify(caracteristicasList));
-      if (form.imagen)
+      formData.append("size", form.size.trim());
+      formData.append("color", form.color.trim());
+      formData.append("description", form.descripcion.trim());
+      formData.append(
+        "mainFeatures",
+        JSON.stringify(caracteristicasList)
+      );
+
+      // Solo agrega la imagen si el usuario subió una
+      if (form.imagen) {
         formData.append("images", form.imagen);
+      }
 
       await apiRequest("/products", {
         method: "POST",
         body: formData,
       });
+
       setSuccess(true);
       setTimeout(() => navigate("/productos"), 1500);
     } catch (err) {
@@ -129,25 +161,36 @@ export default function AgregarProducto() {
     }
   };
 
+  // ---- JSX sin cambios, solo se mantiene igual ----
   return (
-    <div className="min-h-screen bg-[#f5f0eb]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+    <div
+      className="min-h-screen bg-[#f5f0eb]"
+      style={{ fontFamily: "'Montserrat', sans-serif" }}
+    >
       <TopNavbar />
-
       <div className="flex gap-0 px-4 pb-6">
         <Sidebar />
-
         <div className="flex-1 flex flex-col gap-6">
           <div>
-            <button onClick={() => navigate("/productos")} className="flex items-center gap-2 text-[#7a6a6a] hover:text-[#3b2a2a] text-sm font-semibold mb-1 transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            <button
+              onClick={() => navigate("/productos")}
+              className="flex items-center gap-2 text-[#7a6a6a] hover:text-[#3b2a2a] text-sm font-semibold mb-1 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+              </svg>
               Volver
             </button>
             <h1 className="text-2xl font-bold text-[#3b2a2a]">Agregar producto</h1>
-            <p className="text-sm text-[#7a6a6a] mt-0.5">Complete los datos para agregar un producto</p>
+            <p className="text-sm text-[#7a6a6a] mt-0.5">
+              Complete los datos para agregar un producto
+            </p>
           </div>
 
           {apiError && (
-            <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">{apiError}</div>
+            <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
+              {apiError}
+            </div>
           )}
 
           <div className="bg-white rounded-2xl shadow-sm border border-[#ece6df] p-8">
@@ -155,72 +198,137 @@ export default function AgregarProducto() {
               <div className="flex-1 flex flex-col gap-5">
                 {/* Nombre */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-semibold text-[#5a4a4a]">Nombre del producto <span className="text-red-400">*</span></label>
-                  <input type="text" name="nombre" value={form.nombre} onChange={handleChange} placeholder="Ej: Base premium pink fly"
-                    className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${errors.nombre ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"}`} />
-                  {errors.nombre && <span className="text-xs text-red-400">{errors.nombre}</span>}
+                  <label className="text-sm font-semibold text-[#5a4a4a]">
+                    Nombre del producto <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text" name="nombre" value={form.nombre}
+                    onChange={handleChange} placeholder="Ej: Base premium pink fly"
+                    className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${
+                      errors.nombre
+                        ? "border-red-300 bg-red-50"
+                        : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
+                    }`}
+                  />
+                  {errors.nombre && (
+                    <span className="text-xs text-red-400">{errors.nombre}</span>
+                  )}
                 </div>
 
                 {/* Categoría + Precio */}
                 <div className="grid grid-cols-2 gap-4">
-                  {[["categoria","Categoría del producto","Ej: Rostro"],["precio","Precio del producto","Ej: $75.00"]].map(([name, label, ph]) => (
+                  {[
+                    ["categoria", "Categoría del producto", "Ej: Rostro"],
+                    ["precio", "Precio del producto", "Ej: 75.00"],
+                  ].map(([name, label, ph]) => (
                     <div key={name} className="flex flex-col gap-1.5">
-                      <label className="text-sm font-semibold text-[#5a4a4a]">{label} <span className="text-red-400">*</span></label>
-                      <input type="text" name={name} value={form[name]} onChange={handleChange} placeholder={ph}
-                        className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${errors[name] ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"}`} />
-                      {errors[name] && <span className="text-xs text-red-400">{errors[name]}</span>}
+                      <label className="text-sm font-semibold text-[#5a4a4a]">
+                        {label} <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="text" name={name} value={form[name]}
+                        onChange={handleChange} placeholder={ph}
+                        className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${
+                          errors[name]
+                            ? "border-red-300 bg-red-50"
+                            : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
+                        }`}
+                      />
+                      {errors[name] && (
+                        <span className="text-xs text-red-400">{errors[name]}</span>
+                      )}
                     </div>
                   ))}
                 </div>
 
                 {/* Tamaño + Color */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-semibold text-[#5a4a4a]">Tamaño <span className="text-red-400">*</span></label>
-                    <input type="text" name="size" value={form.size} onChange={handleChange} placeholder="Ej: 30 ml"
-                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${errors.size ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"}`} />
-                    {errors.size && <span className="text-xs text-red-400">{errors.size}</span>}
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-semibold text-[#5a4a4a]">Color <span className="text-red-400">*</span></label>
-                    <input type="text" name="color" value={form.color} onChange={handleChange} placeholder="Ej: Nude"
-                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${errors.color ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"}`} />
-                    {errors.color && <span className="text-xs text-red-400">{errors.color}</span>}
-                  </div>
+                  {[
+                    ["size", "Tamaño", "Ej: 30 ml"],
+                    ["color", "Color", "Ej: Nude"],
+                  ].map(([name, label, ph]) => (
+                    <div key={name} className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-[#5a4a4a]">
+                        {label} <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="text" name={name} value={form[name]}
+                        onChange={handleChange} placeholder={ph}
+                        className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${
+                          errors[name]
+                            ? "border-red-300 bg-red-50"
+                            : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
+                        }`}
+                      />
+                      {errors[name] && (
+                        <span className="text-xs text-red-400">{errors[name]}</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
 
                 {/* Marca + Cantidad */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-semibold text-[#5a4a4a]">Marca <span className="text-red-400">*</span></label>
-                    <input type="text" name="marca" value={form.marca} onChange={handleChange} placeholder="Ej: L'Oréal"
-                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${errors.marca ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"}`} />
-                    {errors.marca && <span className="text-xs text-red-400">{errors.marca}</span>}
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-semibold text-[#5a4a4a]">Cantidad <span className="text-red-400">*</span></label>
-                    <input type="number" name="cantidad" value={form.cantidad} onChange={handleChange} placeholder="Ej: 50" min="0"
-                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${errors.cantidad ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"}`} />
-                    {errors.cantidad && <span className="text-xs text-red-400">{errors.cantidad}</span>}
-                  </div>
+                  {[
+                    ["marca", "Marca", "Ej: L'Oréal"],
+                    ["cantidad", "Cantidad", "Ej: 50"],
+                  ].map(([name, label, ph]) => (
+                    <div key={name} className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-[#5a4a4a]">
+                        {label} <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type={name === "cantidad" ? "number" : "text"}
+                        name={name} value={form[name]}
+                        onChange={handleChange} placeholder={ph}
+                        min={name === "cantidad" ? "0" : undefined}
+                        className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${
+                          errors[name]
+                            ? "border-red-300 bg-red-50"
+                            : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
+                        }`}
+                      />
+                      {errors[name] && (
+                        <span className="text-xs text-red-400">{errors[name]}</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
 
                 {/* Descripción */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-semibold text-[#5a4a4a]">Descripción</label>
-                  <textarea name="descripcion" value={form.descripcion} onChange={handleChange} placeholder="Describe las características generales del producto..." rows={4}
-                    className="w-full border border-[#e0d8d0] bg-[#faf8f6] rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all focus:border-[#c8a87a] focus:bg-white resize-none placeholder:text-[#bbb]" />
+                  <label className="text-sm font-semibold text-[#5a4a4a]">
+                    Descripción
+                  </label>
+                  <textarea
+                    name="descripcion" value={form.descripcion}
+                    onChange={handleChange}
+                    placeholder="Describe las características generales del producto..."
+                    rows={4}
+                    className="w-full border border-[#e0d8d0] bg-[#faf8f6] rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all focus:border-[#c8a87a] focus:bg-white resize-none placeholder:text-[#bbb]"
+                  />
                 </div>
 
                 {/* Características */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-semibold text-[#5a4a4a]">Características principales</label>
+                  <label className="text-sm font-semibold text-[#5a4a4a]">
+                    Características principales
+                  </label>
                   <div className="flex gap-2">
-                    <input type="text" value={inputCaracteristica} onChange={(e) => setInputCaracteristica(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleAddCaracteristica()} placeholder="Ej: SPF 30, resistente al agua..."
-                      className="flex-1 border border-[#e0d8d0] bg-[#faf8f6] rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all focus:border-[#c8a87a] focus:bg-white placeholder:text-[#bbb]" />
-                    <button onClick={handleAddCaracteristica} className="w-10 h-10 rounded-full bg-[#f0e8df] hover:bg-[#e8ddd4] text-[#c8a87a] flex items-center justify-center transition-colors flex-shrink-0">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    <input
+                      type="text" value={inputCaracteristica}
+                      onChange={(e) => setInputCaracteristica(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleAddCaracteristica()}
+                      placeholder="Ej: SPF 30, resistente al agua..."
+                      className="flex-1 border border-[#e0d8d0] bg-[#faf8f6] rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all focus:border-[#c8a87a] focus:bg-white placeholder:text-[#bbb]"
+                    />
+                    <button
+                      onClick={handleAddCaracteristica}
+                      className="w-10 h-10 rounded-full bg-[#f0e8df] hover:bg-[#e8ddd4] text-[#c8a87a] flex items-center justify-center transition-colors flex-shrink-0"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 5v14"/><path d="M5 12h14"/>
+                      </svg>
                     </button>
                   </div>
                   {caracteristicasList.length > 0 && (
@@ -228,21 +336,30 @@ export default function AgregarProducto() {
                       {caracteristicasList.map((car, index) => (
                         <span key={index} className="flex items-center gap-1.5 bg-[#f0e8df] text-[#7a5a3a] text-xs font-semibold px-3 py-1.5 rounded-full">
                           {car}
-                          <button onClick={() => handleRemoveCaracteristica(index)} className="text-[#c8a87a] hover:text-[#a07050]">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                          <button
+                            onClick={() => handleRemoveCaracteristica(index)}
+                            className="text-[#c8a87a] hover:text-[#a07050]"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                            </svg>
                           </button>
                         </span>
                       ))}
                     </div>
                   )}
-                  {errors.caracteristicas && <span className="text-xs text-red-400">{errors.caracteristicas}</span>}
+                  {errors.caracteristicas && (
+                    <span className="text-xs text-red-400">{errors.caracteristicas}</span>
+                  )}
                 </div>
               </div>
 
               {/* Imagen + Submit */}
               <div className="w-72 flex flex-col gap-4">
-                <div onClick={() => fileInputRef.current?.click()}
-                  className="w-full aspect-square rounded-2xl border-2 border-dashed border-[#e0d8d0] bg-[#faf8f6] flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#c8a87a] hover:bg-[#fdf9f6] transition-all group">
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full aspect-square rounded-2xl border-2 border-dashed border-[#e0d8d0] bg-[#faf8f6] flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#c8a87a] hover:bg-[#fdf9f6] transition-all group"
+                >
                   {preview ? (
                     <img src={preview} alt="Preview" className="w-full h-full object-cover rounded-2xl" />
                   ) : (
@@ -250,16 +367,32 @@ export default function AgregarProducto() {
                       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:stroke-[#c8a87a] transition-colors">
                         <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
                       </svg>
-                      <span className="text-xs text-center font-medium px-4 group-hover:text-[#c8a87a] transition-colors">Haz clic para subir una imagen</span>
+                      <span className="text-xs text-center font-medium px-4 group-hover:text-[#c8a87a] transition-colors">
+                        Haz clic para subir una imagen
+                      </span>
                     </div>
                   )}
                 </div>
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-                <button onClick={() => fileInputRef.current?.click()} className="w-full bg-[#c8a87a] hover:bg-[#b8986a] text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-sm">
+                <input
+                  ref={fileInputRef} type="file" accept="image/*"
+                  onChange={handleImageChange} className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full bg-[#c8a87a] hover:bg-[#b8986a] text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-sm"
+                >
                   Subir imagen
                 </button>
-                <button onClick={handleSubmit} disabled={loading || success}
-                  className={`w-full font-bold py-3 rounded-xl text-sm transition-all shadow-sm mt-auto ${success ? "bg-green-400 text-white cursor-default" : loading ? "bg-[#e8c898] text-white cursor-wait" : "bg-[#e8a0a0] hover:bg-[#d89090] text-white"}`}>
+                <button
+                  onClick={handleSubmit} disabled={loading || success}
+                  className={`w-full font-bold py-3 rounded-xl text-sm transition-all shadow-sm mt-auto ${
+                    success
+                      ? "bg-green-400 text-white cursor-default"
+                      : loading
+                      ? "bg-[#e8c898] text-white cursor-wait"
+                      : "bg-[#e8a0a0] hover:bg-[#d89090] text-white"
+                  }`}
+                >
                   {success ? "¡Producto agregado!" : loading ? "Guardando..." : "Agregar producto"}
                 </button>
               </div>

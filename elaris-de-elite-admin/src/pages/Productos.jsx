@@ -105,54 +105,55 @@ export default function Productos() {
             <p className="text-center text-red-400 py-10">{error}</p>
           ) : (
             <DataTable
-              headers={["Producto", "Categoría", "Precio", "Estado", "Valoración", "Acciones"]}
+              headers={["Producto", "Categoría", "Marca", "Precio", "Estado", "Acciones"]}
               gridCols="grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr]"
               data={productosFiltrados}
               renderRow={(product) => {
-                const nombre = product.name || product.nombre || product.title || "—";
-                const categoria = product.category?.name || product.category || product.categoria || "—";
-                const precio = product.price ? `$${product.price}` : product.precio || "—";
-                const disponible = (product.stock ?? product.cantidad ?? 1) > 0;
-                const estado = disponible ? "Disponible" : "No Disponible";
-                const rating = product.averageRating || product.rating || "—";
-                const imgUrl = product.images?.[0] || product.imagen || null;
+              const nombre = product.name || "—";
+              // ✅ Fix: idCategory es objeto populado
+              const categoria = product.idCategory?.name || "—";
+              // ✅ Fix: idBrand es objeto populado  
+              const marca = product.idBrand?.name || "—";
+              const precio = product.price != null ? `$${product.price}` : "—";
+              const disponible = (product.stock ?? 0) > 0;
+              const estado = disponible ? "Disponible" : "No Disponible";
+              // ✅ Fix: images es array de objetos {image, public_id}
+              const imgUrl = product.images?.[0]?.image || null;
 
-                return (
-                  <>
-                    <div className="flex items-center gap-4 pr-4">
-                      <div className={`w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden bg-[#f5c6cb]`}>
-                        {imgUrl ? (
-                          <img src={imgUrl} alt={nombre} className="w-full h-full object-cover" />
-                        ) : null}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-[#3b2a2a] leading-tight">{nombre}</span>
-                      </div>
+              return (
+                <>
+                  <div className="flex items-center gap-4 pr-4">
+                    <div className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden bg-[#f5c6cb]">
+                      {imgUrl ? (
+                        <img src={imgUrl} alt={nombre} className="w-full h-full object-cover" />
+                      ) : null}
                     </div>
-                    <div className="text-[#5a4a4a] font-medium">{categoria}</div>
-                    <div className="text-[#5a4a4a] font-medium">{precio}</div>
-                    <div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${disponible ? "bg-[#a3d2a5]" : "bg-red-300"}`}>
-                        {estado}
-                      </span>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-[#3b2a2a] leading-tight">{nombre}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 font-bold text-[#5a4a4a]">
-                      ⭐ {rating}
-                    </div>
-                    <div className="flex items-center justify-center gap-3">
-                      <button
-                        onClick={() => handleDelete(product._id)}
-                        className="text-[#ef4444] hover:text-red-600"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </>
-                );
-              }}
+                  </div>
+                  <div className="text-[#5a4a4a] font-medium">{categoria}</div>
+                  <div className="text-[#5a4a4a] font-medium">{marca}</div>
+                  <div className="text-[#5a4a4a] font-medium">{precio}</div>
+                  <div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${disponible ? "bg-[#a3d2a5]" : "bg-red-300"}`}>
+                      {estado}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-center gap-3">
+                    <button
+                      onClick={() => handleDelete(product._id)}
+                      className="text-[#ef4444] hover:text-red-600"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </>
+              );
+            }}
             />
           )}
         </div>
