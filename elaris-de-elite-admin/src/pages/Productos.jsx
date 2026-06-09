@@ -1,135 +1,87 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // <-- Importar useNavigate
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/BarraLateral.jsx";
 import TopNavbar from "../components/BarraNavegacion.jsx";
 import DataTable from "../components/TablaDatos.jsx";
 import SearchFilterBar from "../components/BarraBusqueda.jsx";
 
-const productosList = [
-  {
-    id: 1,
-    title: "Base premium pink fly",
-    subtitle: "",
-    category: "Rostro",
-    price: "$75.00",
-    status: "Disponible",
-    rating: 4.8,
-    hasActions: true,
-    imgBg: "bg-[#f5c6cb]",
-  },
-  {
-    id: 2,
-    title: "Paleta de sombras Handbag",
-    subtitle: "Rabanne",
-    category: "Rostro",
-    price: "$75.00",
-    status: "Disponible",
-    rating: 4.8,
-    hasActions: true,
-    imgBg: "bg-[#e2e2e2]",
-  },
-  {
-    id: 3,
-    title: "Perfume Signature Elite",
-    subtitle: "",
-    category: "Rostro",
-    price: "$75.00",
-    status: "Disponible",
-    rating: 4.8,
-    hasActions: true,
-    imgBg: "bg-[#f9dada]",
-  },
-  {
-    id: 4,
-    title: "Rubor compacto iluminador",
-    subtitle: "",
-    category: "Fragancias",
-    price: "$75.00",
-    status: "Disponible",
-    rating: 4.8,
-    hasActions: true,
-    imgBg: "bg-[#2a2a2a]",
-  },
-  {
-    id: 5,
-    title: "Máscara de pestañas volumen",
-    subtitle: "",
-    category: "Rostro",
-    price: "$75.00",
-    status: "Disponible",
-    rating: 4.8,
-    hasActions: true,
-    imgBg: "bg-[#4a4a4a]",
-  },
-  {
-    id: 6,
-    title: "Cookie and Tickle Shimmer Finish Powder Highlighters (Benefit)",
-    subtitle: "",
-    category: "Rostro",
-    price: "$75.00",
-    status: "Disponible",
-    rating: 4.8,
-    hasActions: true,
-    imgBg: "bg-[#d4cfc9]",
-  },
-];
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
+
+async function apiRequest(path, options = {}) {
+  const response = await fetch(`${API_URL}${path}`, {
+    credentials: "include",
+    headers: options.body instanceof FormData ? options.headers : { "Content-Type": "application/json", ...(options.headers || {}) },
+    ...options,
+    body: options.body && !(options.body instanceof FormData) ? JSON.stringify(options.body) : options.body,
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || "Error en la solicitud");
+  return data;
+}
 
 export default function Productos() {
-  const navigate = useNavigate(); // <-- Hook de navegación
-  const [active, setActive] = useState("Productos");
+  const navigate = useNavigate();
+  const [productosList, setProductosList] = useState([]);
   const [textoBusqueda, setTextoBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("Todos");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    cargarProductos();
+  }, []);
+
+  const cargarProductos = async () => {
+    setLoading(true);
+    try {
+      const data = await apiRequest("/products");
+      setProductosList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError("No se pudieron cargar los productos.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar este producto?")) return;
+    try {
+      await apiRequest(`/products/${id}`, { method: "DELETE" });
+      setProductosList((prev) => prev.filter((p) => p._id !== id));
+    } catch (err) {
+      alert("Error al eliminar el producto: " + err.message);
+    }
+  };
 
   const productosFiltrados = productosList.filter((prod) => {
-    const coincideTexto = prod.title.toLowerCase().includes(textoBusqueda.toLowerCase());
-    const coincideEstado = filtroEstado === "Todos" || prod.status === filtroEstado;
+    const nombre = prod.name || prod.nombre || prod.title || "";
+    const estado = prod.stock > 0 ? "Disponible" : "No Disponible";
+    const coincideTexto = nombre.toLowerCase().includes(textoBusqueda.toLowerCase());
+    const coincideEstado = filtroEstado === "Todos" || estado === filtroEstado;
     return coincideTexto && coincideEstado;
   });
 
-  const handleEdit = (product) => {
-    // Navegar a editar con el ID del producto (cuando implementes esa página)
-    // navigate(`/productos/editar/${product.id}`);
-    console.log("Editar:", product);
-  };
-
-  const handleDelete = (id) => {
-    // Aquí iría la lógica de eliminar (llamada a API + confirmación)
-    console.log("Eliminar producto con id:", id);
-  };
-
   return (
-    <div
-      className="min-h-screen bg-[#f5f0eb]"
-      style={{ fontFamily: "'Montserrat', sans-serif" }}
-    >
+    <div className="min-h-screen bg-[#f5f0eb]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
       <TopNavbar />
 
       <div className="flex gap-0 px-4 pb-6">
         <Sidebar />
 
         <div className="flex-1 flex flex-col gap-6">
-          {/* Header */}
           <div className="flex justify-between items-start">
             <div>
-              <h1
-                className="text-2xl font-bold text-[#3b2a2a]"
-                style={{ fontFamily: "'Montserrat', sans-serif" }}
-              >
-                Productos
-              </h1>
-              <p className="text-sm text-[#7a6a6a] mt-0.5">
-                Gestione sus productos
-              </p>
+              <h1 className="text-2xl font-bold text-[#3b2a2a]">Productos</h1>
+              <p className="text-sm text-[#7a6a6a] mt-0.5">Gestione sus productos</p>
             </div>
             <div className="flex gap-3">
-              {/* ↓ ACTUALIZADO: navega a /productos/categorias */}
               <button
                 onClick={() => navigate("/productos/categoriasymarcas")}
                 className="bg-[#c8a87a] hover:bg-[#b8986a] text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors shadow-sm"
               >
                 Categorías y marcas
               </button>
-              {/* ↓ ACTUALIZADO: navega a /productos/agregar */}
               <button
                 onClick={() => navigate("/productos/agregar")}
                 className="bg-[#c8a87a] hover:bg-[#b8986a] text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors shadow-sm"
@@ -139,60 +91,57 @@ export default function Productos() {
             </div>
           </div>
 
-          {/* Search Bar */}
           <SearchFilterBar
             placeholder="Ingrese el nombre del producto"
             filters={["Todos", "Disponible", "No Disponible"]}
             activeFilter={filtroEstado}
-            onFilterClick={(nuevoFiltro) => setFiltroEstado(nuevoFiltro)}
-            onSearchChange={(valor) => setTextoBusqueda(valor)}
+            onFilterClick={(f) => setFiltroEstado(f)}
+            onSearchChange={(v) => setTextoBusqueda(v)}
           />
 
-          {/* Data Table */}
-          <DataTable
-            headers={["Producto", "Categoria", "Precio", "Estado", "Valoración", "Acciones"]}
-            gridCols="grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr]"
-            data={productosFiltrados}
-            renderRow={(product) => (
-              <>
-                <div className="flex items-center gap-4 pr-4">
-                  <div className={`w-12 h-12 rounded-xl flex-shrink-0 ${product.imgBg}`}></div>
-                  <div className="flex flex-col">
-                    {product.subtitle && <span className="text-xs font-bold text-[#7a6a6a]">{product.subtitle}</span>}
-                    <span className="font-bold text-[#3b2a2a] leading-tight">{product.title}</span>
-                  </div>
-                </div>
-                <div className="text-[#5a4a4a] font-medium">{product.category}</div>
-                <div className="text-[#5a4a4a] font-medium">{product.price}</div>
-                <div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${
-                    product.status === "Disponible" ? "bg-[#a3d2a5]" : "bg-red-300"
-                  }`}>
-                    {product.status}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 font-bold text-[#5a4a4a]">
-                  ⭐ {product.rating}
-                </div>
+          {loading ? (
+            <p className="text-center text-[#9a8a8a] py-10">Cargando productos...</p>
+          ) : error ? (
+            <p className="text-center text-red-400 py-10">{error}</p>
+          ) : (
+            <DataTable
+              headers={["Producto", "Categoría", "Precio", "Estado", "Valoración", "Acciones"]}
+              gridCols="grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr]"
+              data={productosFiltrados}
+              renderRow={(product) => {
+                const nombre = product.name || product.nombre || product.title || "—";
+                const categoria = product.category?.name || product.category || product.categoria || "—";
+                const precio = product.price ? `$${product.price}` : product.precio || "—";
+                const disponible = (product.stock ?? product.cantidad ?? 1) > 0;
+                const estado = disponible ? "Disponible" : "No Disponible";
+                const rating = product.averageRating || product.rating || "—";
+                const imgUrl = product.images?.[0] || product.imagen || null;
 
-                <div className="flex items-center justify-center gap-3">
-                  {product.hasActions && (
-                    <>
-                      <button className="text-[#3b2a2a] hover:text-[#c8a87a]">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
-                        </svg>
-                      </button>
+                return (
+                  <>
+                    <div className="flex items-center gap-4 pr-4">
+                      <div className={`w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden bg-[#f5c6cb]`}>
+                        {imgUrl ? (
+                          <img src={imgUrl} alt={nombre} className="w-full h-full object-cover" />
+                        ) : null}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-[#3b2a2a] leading-tight">{nombre}</span>
+                      </div>
+                    </div>
+                    <div className="text-[#5a4a4a] font-medium">{categoria}</div>
+                    <div className="text-[#5a4a4a] font-medium">{precio}</div>
+                    <div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${disponible ? "bg-[#a3d2a5]" : "bg-red-300"}`}>
+                        {estado}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 font-bold text-[#5a4a4a]">
+                      ⭐ {rating}
+                    </div>
+                    <div className="flex items-center justify-center gap-3">
                       <button
-                        onClick={() => handleEdit(product)}
-                        className="text-[#c8a87a] hover:text-[#b8986a]"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(product.id)}
+                        onClick={() => handleDelete(product._id)}
                         className="text-[#ef4444] hover:text-red-600"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -200,12 +149,12 @@ export default function Productos() {
                           <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
                         </svg>
                       </button>
-                    </>
-                  )}
-                </div>
-              </>
-            )}
-          />
+                    </div>
+                  </>
+                );
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

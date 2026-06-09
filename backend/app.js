@@ -13,6 +13,9 @@ import registersCustomersRoutes from './src/routes/registerCustomers.js';
 import logoutRoutes from './src/routes/logout.js';
 import cartRoutes from './src/routes/cart.js';
 import ordersRoutes from './src/routes/orders.js';
+import administratorsRoutes from './src/routes/administrators.js';
+import loginAdminRoutes from './src/routes/loginAdmin.js';
+import registerAdminRoutes from './src/routes/registerAdmin.js';
 import limiter from './src/middlewares/limiter.js';
 
 import cors from 'cors'; 
@@ -24,12 +27,12 @@ const app = express();
 
 //Use cors is for allow cross-origin requests, which is necessary when the frontend and backend are hosted on different domains or ports. It enables the frontend to make API calls to the backend without being blocked by the browser's same-origin policy.
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://localhost:5174'], // This is the URL of the frontend application that is allowed to access the backend API.
+    origin: ['http://localhost:5173', 'http://localhost:5174'], // Permite el admin (5174) y el cliente (5173)
     //Allows the sending of cookies and other credentials in cross-origin requests, which is necessary for authentication and session management.
     credentials: true
 }));
  
-//Cookie parser allows us to parse the cookies sent by the client in the request headers and make them easily accessible in our route handlers. This is particularly useful for handling authentication tokens, session IDs, and other data stored in cookies. By using cookie-parser, we can read and manipulate cookies in our Express application, enabling features like user authentication and personalized experiences based on cookie data.
+//Cookie parser allows us to parse the cookies sent by the client in the request headers and make them easily accessible in our route handlers.
 app.use(cookieParser());
 
 //Accept JSON 
@@ -48,7 +51,10 @@ app.use('/api/login', loginCustomerRoutes);
 app.use('/api/recoveryPassword', customerRecoveryPasswordRoutes);
 app.use('/api/logout', logoutRoutes);
 app.use('/api/registerCustomers', registersCustomersRoutes);
-app.use('/api/cart', cartRoutes)
+app.use('/api/cart', cartRoutes);
 app.use('/api/orders', ordersRoutes);
+app.use('/api/administrators', administratorsRoutes);
+app.use('/api/loginAdmin', loginAdminRoutes);
+app.use('/api/registerAdmin', registerAdminRoutes);
 
 export default app;
