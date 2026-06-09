@@ -16,7 +16,7 @@ import ordersRoutes from './src/routes/orders.js';
 import administratorsRoutes from './src/routes/administrators.js';
 import loginAdminRoutes from './src/routes/loginAdmin.js';
 import registerAdminRoutes from './src/routes/registerAdmin.js';
-import limiter from './src/middlewares/limiter.js';
+//import limiter from './src/middlewares/limiter.js';
 
 import cors from 'cors'; 
 //Important 
@@ -38,7 +38,7 @@ app.use(cookieParser());
 //Accept JSON 
 app.use(express.json());
 
-app.use(limiter);
+// app.use(limiter);
 
 //Create the endpoints
 app.use('/api/discountCodes', discountCodesRoutes);

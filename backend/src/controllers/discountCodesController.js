@@ -9,9 +9,22 @@ discountCodesController.getDiscountCodes = async (req, res) =>{
         res.json(discountCodes) 
     } catch (error) {
         console.error("Error getting discount codes:", error);
-        res.status(500).json({message: "Internal server error"})
+        return res.status(500).json({message: "Internal server error"})
     }
-    
+}
+
+//SELECT BY ID
+discountCodesController.getDiscountCodeById = async (req, res) => {
+    try {
+        const discountCode = await discountCodesModel.findById(req.params.id) //Find the discount code by its id
+        if(!discountCode){ 
+            return res.status(404).json({message: "Discount code not found"})
+        }
+        res.json(discountCode) //If the discount code is found, send the data of the discount code
+    } catch (error) {
+        console.error("Error getting discount code by id:", error);
+        return res.status(500).json({message: "Internal server error"})
+    }
 }
 
 //INSERT
@@ -29,7 +42,7 @@ discountCodesController.createDiscountCode = async (req, res) => {
         res.status(201).json({message: "Discount code saved"})
     } catch (error) {
         console.error("Error creating discount code:", error);
-        res.status(500).json({message: "Internal server error"})
+        return res.status(500).json({message: "Internal server error"})
     }
 }
 
@@ -47,7 +60,7 @@ discountCodesController.updateDiscountCode = async(req, res) => {
     if(!updated){ return res.status(404).json({message: "Discount code not found"})} //If the discount code is not found, show a message of error
 
     //If the data is updated, send a confirmation message
-    res.json({message: "Discount code updated"})
+    return res.json({message: "Discount code updated"})
 }
 
 //DELETE
@@ -58,7 +71,7 @@ discountCodesController.deleteDiscountCode = async(req, res) => {
     } //If the discount code is not found, show a message of error
 
     //If the data is deleted, send a confirmation message
-    res.json({message: "Discount code deleted"})
+    return res.json({message: "Discount code deleted"})
 }
 
 //Additional endpoints for specific discount code operations
@@ -72,10 +85,10 @@ discountCodesController.searchByCodeAndIsAvailable = async(req, res) => {
         } //If the discount code is not found, show a message of error
 
         //If the discount code is found, send the data of the discount code
-        res.json(discountCode)
+        return res.json(discountCode)
     }catch (error) {
         console.error("Error searching discount code:", error);
-        res.status(500).json({message: "Internal server error"})
+        return res.status(500).json({message: "Internal server error"})
     }
 }
 

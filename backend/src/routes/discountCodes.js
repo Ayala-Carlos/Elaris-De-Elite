@@ -19,5 +19,6 @@ router.route("/count").get(discountCodesController.countDiscountCodes)
 router.route("/:id")
 .put(discountCodesController.updateDiscountCode)
 .delete(discountCodesController.deleteDiscountCode)
+.get(discountCodesController.getDiscountCodeById)
 
 export default router;
