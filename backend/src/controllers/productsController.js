@@ -55,6 +55,24 @@ productsController.createProduct = async (req, res) => {
       mainFeatures,
     } = req.body;
 
+    if (typeof mainFeatures === "string") {
+      try {
+        mainFeatures = JSON.parse(mainFeatures);
+      } catch {
+        mainFeatures = mainFeatures
+          .split(",")
+          .map((feature) => feature.trim())
+          .filter(Boolean);
+      }
+    }
+
+    if (Array.isArray(mainFeatures)) {
+      mainFeatures = mainFeatures
+        .map((feature) => (typeof feature === "string" ? feature : feature?.feature))
+        .filter(Boolean)
+        .map((feature) => ({ feature }));
+    }
+
     //Validate that all the required fields are filled
     if (
       !name ||
@@ -82,9 +100,9 @@ productsController.createProduct = async (req, res) => {
 
     //Sanitize the data
     name = name.trim();
-    size = size.trim();
-    color = color.trim();
-    description = description.trim();
+    size = String(size ?? "").trim();
+    color = String(color ?? "").trim();
+    description = String(description ?? "").trim();
 
     //Check if the product already exists, this is to avoid duplicates
     const existingProduct = await productModels.findOne({ name: name.trim() }); //Find a product with the same name
@@ -136,6 +154,24 @@ productsController.updateProduct = async (req, res) => {
       mainFeatures,
     } = req.body;
 
+    if (typeof mainFeatures === "string") {
+      try {
+        mainFeatures = JSON.parse(mainFeatures);
+      } catch {
+        mainFeatures = mainFeatures
+          .split(",")
+          .map((feature) => feature.trim())
+          .filter(Boolean);
+      }
+    }
+
+    if (Array.isArray(mainFeatures)) {
+      mainFeatures = mainFeatures
+        .map((feature) => (typeof feature === "string" ? feature : feature?.feature))
+        .filter(Boolean)
+        .map((feature) => ({ feature }));
+    }
+
     const productFound = await productModels.findById(req.params.id);
     if (!productFound) {
       return res.status(404).json({ message: "Product not found" });
@@ -179,9 +215,9 @@ productsController.updateProduct = async (req, res) => {
 
     //Sanitize the data
     name = name.trim();
-    size = size.trim();
-    color = color.trim();
-    description = description.trim();
+    size = String(size ?? "").trim();
+    color = String(color ?? "").trim();
+    description = String(description ?? "").trim();
 
     const updatedProduct = await productModels.findByIdAndUpdate(
       req.params.id,

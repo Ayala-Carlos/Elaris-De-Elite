@@ -3,22 +3,33 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/BarraLateral.jsx";
 import TopNavbar from "../components/BarraNavegacion.jsx";
 
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
+
+async function apiRequest(path, options = {}) {
+  const response = await fetch(`${API_URL}${path}`, {
+    credentials: "include",
+    headers: options.body instanceof FormData ? options.headers : { "Content-Type": "application/json", ...(options.headers || {}) },
+    ...options,
+    body: options.body && !(options.body instanceof FormData) ? JSON.stringify(options.body) : options.body,
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || "Error en la solicitud");
+  return data;
+}
+
 const initialForm = {
-  nombre: "",
-  plataforma: "",
-  presupuesto: "",
-  fechaInicio: "",
-  fechaFinal: "",
-  descripcion: "",
+  nombre: "", plataforma: "", presupuesto: "",
+  fechaInicio: "", fechaFinal: "", descripcion: "",
 };
 
 export default function AgregarCampana() {
   const navigate = useNavigate();
-
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,188 +49,90 @@ export default function AgregarCampana() {
 
   const handleSubmit = async () => {
     const newErrors = validate();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
+    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
     setLoading(true);
-    await new Promise((res) => setTimeout(res, 1200));
-    setLoading(false);
-    setSuccess(true);
-    setTimeout(() => navigate("/marketing"), 1500);
+    setApiError("");
+    try {
+      await apiRequest("/marketingCampaings", {
+        method: "POST",
+        body: {
+          campaingName: form.nombre,
+          platform: form.plataforma,
+          assignedBudget: Number(String(form.presupuesto).replace("$", "")) || Number(form.presupuesto) || 0,
+          startDate: form.fechaInicio,
+          endDate: form.fechaFinal,
+          description: form.descripcion,
+          status: "active",
+        },
+      });
+      setSuccess(true);
+      setTimeout(() => navigate("/marketing"), 1500);
+    } catch (err) {
+      setApiError(err.message || "Error al guardar la campaña.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div
-      className="min-h-screen bg-[#f5f0eb]"
-      style={{ fontFamily: "'Montserrat', sans-serif" }}
-    >
-      <TopNavbar />
+  const fieldClass = (name) =>
+    `w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${errors[name] ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"}`;
 
+  return (
+    <div className="min-h-screen bg-[#f5f0eb]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+      <TopNavbar />
       <div className="flex gap-0 px-4 pb-6">
         <Sidebar />
-
         <div className="flex-1 flex flex-col gap-6">
-          {/* Header con botón atrás */}
           <div>
-            <button
-              onClick={() => navigate("/marketing")}
-              className="flex items-center gap-2 text-[#7a6a6a] hover:text-[#3b2a2a] text-sm font-semibold mb-1 transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
-              </svg>
+            <button onClick={() => navigate("/marketing")} className="flex items-center gap-2 text-[#7a6a6a] hover:text-[#3b2a2a] text-sm font-semibold mb-1 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
               Volver
             </button>
             <h1 className="text-2xl font-bold text-[#3b2a2a]">Agregar campaña de marketing</h1>
             <p className="text-sm text-[#7a6a6a] mt-0.5">Complete los datos para agregar una campaña</p>
           </div>
 
-          {/* Card del formulario */}
+          {apiError && <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">{apiError}</div>}
+
           <div className="bg-white rounded-2xl shadow-sm border border-[#ece6df] p-8">
             <div className="flex gap-8">
-              {/* Columna izquierda — campos del formulario */}
               <div className="flex-1 flex flex-col gap-5">
+                {[
+                  ["nombre", "Nombre de la campaña", "text", "Ej: Campaña primavera 2025"],
+                  ["plataforma", "Plataforma", "text", "Ej: Instagram, Facebook, TikTok..."],
+                  ["presupuesto", "Presupuesto", "text", "Ej: $500.00"],
+                ].map(([name, label, type, ph]) => (
+                  <div key={name} className="flex flex-col gap-1.5">
+                    <label className="text-sm font-semibold text-[#5a4a4a]">{label} <span className="text-red-400">*</span></label>
+                    <input type={type} name={name} value={form[name]} onChange={handleChange} placeholder={ph} className={fieldClass(name)} />
+                    {errors[name] && <span className="text-xs text-red-400">{errors[name]}</span>}
+                  </div>
+                ))}
 
-                {/* Nombre */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-semibold text-[#5a4a4a]">
-                    Nombre de la campaña <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="nombre"
-                    value={form.nombre}
-                    onChange={handleChange}
-                    placeholder="Ej: Campaña primavera 2025"
-                    className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb]
-                      ${errors.nombre
-                        ? "border-red-300 bg-red-50 focus:border-red-400"
-                        : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
-                      }`}
-                  />
-                  {errors.nombre && <span className="text-xs text-red-400">{errors.nombre}</span>}
-                </div>
-
-                {/* Plataforma */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-semibold text-[#5a4a4a]">
-                    Plataforma <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="plataforma"
-                    value={form.plataforma}
-                    onChange={handleChange}
-                    placeholder="Ej: Instagram, Facebook, TikTok..."
-                    className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb]
-                      ${errors.plataforma
-                        ? "border-red-300 bg-red-50 focus:border-red-400"
-                        : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
-                      }`}
-                  />
-                  {errors.plataforma && <span className="text-xs text-red-400">{errors.plataforma}</span>}
-                </div>
-
-                {/* Fila: Presupuesto */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-semibold text-[#5a4a4a]">
-                    Presupuesto <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="presupuesto"
-                    value={form.presupuesto}
-                    onChange={handleChange}
-                    placeholder="Ej: $500.00"
-                    className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb]
-                      ${errors.presupuesto
-                        ? "border-red-300 bg-red-50 focus:border-red-400"
-                        : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
-                      }`}
-                  />
-                  {errors.presupuesto && <span className="text-xs text-red-400">{errors.presupuesto}</span>}
-                </div>
-
-                {/* Fila: Fechas */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-semibold text-[#5a4a4a]">
-                      Fecha de inicio <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      name="fechaInicio"
-                      value={form.fechaInicio}
-                      onChange={handleChange}
-                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all
-                        ${errors.fechaInicio
-                          ? "border-red-300 bg-red-50 focus:border-red-400"
-                          : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
-                        }`}
-                    />
-                    {errors.fechaInicio && <span className="text-xs text-red-400">{errors.fechaInicio}</span>}
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-semibold text-[#5a4a4a]">
-                      Fecha final <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      name="fechaFinal"
-                      value={form.fechaFinal}
-                      onChange={handleChange}
-                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all
-                        ${errors.fechaFinal
-                          ? "border-red-300 bg-red-50 focus:border-red-400"
-                          : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
-                        }`}
-                    />
-                    {errors.fechaFinal && <span className="text-xs text-red-400">{errors.fechaFinal}</span>}
-                  </div>
+                  {[["fechaInicio","Fecha de inicio"],["fechaFinal","Fecha final"]].map(([name, label]) => (
+                    <div key={name} className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-[#5a4a4a]">{label} <span className="text-red-400">*</span></label>
+                      <input type="date" name={name} value={form[name]} onChange={handleChange} className={fieldClass(name)} />
+                      {errors[name] && <span className="text-xs text-red-400">{errors[name]}</span>}
+                    </div>
+                  ))}
                 </div>
 
-                {/* Descripción */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-semibold text-[#5a4a4a]">Descripción</label>
-                  <textarea
-                    name="descripcion"
-                    value={form.descripcion}
-                    onChange={handleChange}
-                    placeholder="Describe el objetivo o enfoque de la campaña..."
-                    rows={4}
-                    className="w-full border border-[#e0d8d0] bg-[#faf8f6] rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all focus:border-[#c8a87a] focus:bg-white resize-none placeholder:text-[#bbb]"
-                  />
+                  <textarea name="descripcion" value={form.descripcion} onChange={handleChange}
+                    placeholder="Describe el objetivo o enfoque de la campaña..." rows={4}
+                    className="w-full border border-[#e0d8d0] bg-[#faf8f6] rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all focus:border-[#c8a87a] focus:bg-white resize-none placeholder:text-[#bbb]" />
                 </div>
               </div>
 
-              {/* Columna derecha — acciones */}
-            <div className="w-72 flex flex-col justify-end gap-4">
-            <button
-                onClick={handleSubmit}
-                disabled={loading || success}
-                className={`w-full font-bold py-3 rounded-xl text-sm transition-all shadow-sm
-                ${success
-                    ? "bg-green-400 text-white cursor-default"
-                    : loading
-                    ? "bg-[#e8c898] text-white cursor-wait"
-                    : "bg-[#e8a0a0] hover:bg-[#d89090] active:bg-[#c88080] text-white"
-                }`}
-            >
-                {success ? (
-                <span className="flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 6 9 17l-5-5"/>
-                    </svg>
-                    ¡Campaña agregada!
-                </span>
-                ) : loading ? (
-                "Guardando..."
-                ) : (
-                "Agregar campaña"
-                )}
-            </button>
-            </div>
+              <div className="w-72 flex flex-col justify-end gap-4">
+                <button onClick={handleSubmit} disabled={loading || success}
+                  className={`w-full font-bold py-3 rounded-xl text-sm transition-all shadow-sm ${success ? "bg-green-400 text-white cursor-default" : loading ? "bg-[#e8c898] text-white cursor-wait" : "bg-[#e8a0a0] hover:bg-[#d89090] text-white"}`}>
+                  {success ? "¡Campaña agregada!" : loading ? "Guardando..." : "Agregar campaña"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
