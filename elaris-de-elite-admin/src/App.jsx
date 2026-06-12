@@ -28,9 +28,15 @@ export default function App() {
         <Route path="/productos" element={<Productos />} />
         <Route path="/pedidos" element={<Pedidos />} />
         <Route path="/marketing" element={<CampanasMarketing />} />
+        <Route path="/marketing/agregar" element={<AgregarCampana />} />
+        <Route path="/marketing/editar/:id" element={<AgregarCampana />} />
         <Route path="/productos/agregar" element={<AgregarProducto />} />
+        <Route path="/productos/editar/:id" element={<AgregarProducto />} />
         <Route path="/descuentos/editar/:id" element={<AgregarDescuento />} />
-        <Route path="/productos/categoriasymarcas" element={<CategoriasYMarcas />} />
+        <Route
+          path="/productos/categoriasymarcas"
+          element={<CategoriasYMarcas />}
+        />
         <Route path="/marketing/agregar" element={<AgregarCampana />} />
         <Route path="/descuentos" element={<CodigosDescuento />} />
         <Route path="/descuentos/agregar" element={<AgregarDescuento />} />

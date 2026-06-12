@@ -3,6 +3,7 @@ import Sidebar from "../components/BarraLateral.jsx";
 import TopNavbar from "../components/BarraNavegacion.jsx";
 import DataTable from "../components/TablaDatos.jsx";
 import SearchFilterBar from "../components/BarraBusqueda.jsx";
+import Swal from "sweetalert2"; // Importamos SweetAlert2
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
 
@@ -38,13 +39,41 @@ export default function Clientes() {
   }, []);
 
   const handleEliminar = async (id) => {
-    if (!window.confirm("¿Eliminar este cliente?")) return;
-    try {
-      await apiRequest(`/customers/${id}`, { method: "DELETE" });
-      setClientes((prev) => prev.filter((c) => c._id !== id));
-    } catch (err) {
-      alert("Error al eliminar: " + err.message);
-    }
+    // Alerta de confirmación con SweetAlert2
+    Swal.fire({
+      title: "¿Eliminar este cliente?",
+      text: "Esta acción no se puede deshacer de forma directa.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#7a6a6a",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+      background: "#ffffff"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await apiRequest(`/customers/${id}`, { method: "DELETE" });
+          setClientes((prev) => prev.filter((c) => c._id !== id));
+          
+          // Alerta de éxito autoprogramada para cerrarse sola
+          Swal.fire({
+            title: "¡Eliminado!",
+            text: "El cliente ha sido removido.",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false
+          });
+        } catch (err) {
+          // Alerta en caso de error en la API
+          Swal.fire({
+            title: "Error",
+            text: "No se pudo eliminar al cliente: " + err.message,
+            icon: "error"
+          });
+        }
+      }
+    });
   };
 
   const clientesFiltrados = clientes.filter((c) => {
@@ -116,7 +145,7 @@ export default function Clientes() {
                             </span>
                           </div>
                         </div>
-                        <button onClick={() => handleEliminar(c._id)} className="text-red-400 hover:text-red-600 transition-colors p-1">
+                        <button onClick={() => handleEliminar(c._id)} className="text-red-400 hover:text-red-600 transition-colors p-1" title="Eliminar cliente">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                         </button>
                       </div>

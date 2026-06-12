@@ -16,6 +16,7 @@ import ordersRoutes from './src/routes/orders.js';
 import administratorsRoutes from './src/routes/administrators.js';
 import loginAdminRoutes from './src/routes/loginAdmin.js';
 import registerAdminRoutes from './src/routes/registerAdmin.js';
+import reviewsRoutes from './src/routes/reviews.js';
 //import limiter from './src/middlewares/limiter.js';
 
 import cors from 'cors'; 
@@ -56,5 +57,6 @@ app.use('/api/orders', ordersRoutes);
 app.use('/api/administrators', administratorsRoutes);
 app.use('/api/loginAdmin', loginAdminRoutes);
 app.use('/api/registerAdmin', registerAdminRoutes);
+app.use('/api/reviews', reviewsRoutes);
 
 export default app;

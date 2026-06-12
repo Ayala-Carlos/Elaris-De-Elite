@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/BarraLateral.jsx";
 import TopNavbar from "../components/BarraNavegacion.jsx";
-
+import Swal from "sweetalert2"; // Importamos SweetAlert2
+ 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
-
+ 
 async function apiRequest(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
     credentials: "include",
@@ -18,12 +19,12 @@ async function apiRequest(path, options = {}) {
         ? JSON.stringify(options.body)
         : options.body,
   });
-
+ 
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || "Error en la solicitud");
   return data;
 }
-
+ 
 const initialForm = {
   codigo: "",
   porcentaje: "",
@@ -31,46 +32,41 @@ const initialForm = {
   limiteUso: "",
   estado: "activo",
 };
-
-export default function AgregarDescuento() {
+ 
+export default function AgregarCodigo() {
   const navigate = useNavigate();
   const { id } = useParams();
   const esEdicion = Boolean(id);
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [apiError, setApiError] = useState("");
-
+ 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
-
+ 
   const validate = () => {
     const newErrors = {};
-    if (!form.codigo.trim()) newErrors.codigo = "El código es requerido";
-    if (!form.porcentaje.trim())
-      newErrors.porcentaje = "El porcentaje es requerido";
-    if (!form.fechaExpiracion)
-      newErrors.fechaExpiracion = "La fecha de expiración es requerida";
-    if (!form.limiteUso.trim())
-      newErrors.limiteUso = "El límite de uso es requerido";
+    // Convertimos a String seguro antes de aplicar .trim() para evitar caídas si viene como Number
+    if (!form.codigo?.toString().trim()) newErrors.codigo = "El código es requerido";
+    if (!form.porcentaje?.toString().trim()) newErrors.porcentaje = "El porcentaje es requerido";
+    if (!form.fechaExpiracion) newErrors.fechaExpiracion = "La fecha de expiración es requerida";
+    if (!form.limiteUso?.toString().trim()) newErrors.limiteUso = "El límite de uso es requerido";
     return newErrors;
   };
-
+ 
   const handleSubmit = async () => {
     const newErrors = validate();
-
+ 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
+ 
     setLoading(true);
-    setApiError("");
-
+ 
     try {
       const payload = {
         code: form.codigo,
@@ -79,7 +75,7 @@ export default function AgregarDescuento() {
         usageLimit: Number(form.limiteUso),
         isActive: form.estado === "activo",
       };
-
+ 
       if (esEdicion) {
         await apiRequest(`/discountCodes/${id}`, {
           method: "PUT",
@@ -91,43 +87,66 @@ export default function AgregarDescuento() {
           body: payload,
         });
       }
-
-      setSuccess(true);
-
+ 
+      // Alerta de Éxito con SweetAlert
+      Swal.fire({
+        title: esEdicion ? "¡Código actualizado!" : "¡Código agregado!",
+        text: esEdicion ? "Los cambios se guardaron correctamente." : "El código de descuento fue creado con éxito.",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+        background: "#ffffff",
+        customClass: {
+          title: "text-[#3b2a2a] font-bold",
+        }
+      });
+ 
       setTimeout(() => {
         navigate("/descuentos");
-      }, 1500);
+      }, 2000);
     } catch (err) {
-      setApiError(err.message || "Error al guardar el código.");
+      // Alerta de Error con SweetAlert
+      Swal.fire({
+        title: "Error al guardar",
+        text: err.message || "No se pudo procesar la solicitud.",
+        icon: "error",
+        confirmButtonColor: "#e8a0a0",
+      });
     } finally {
       setLoading(false);
     }
   };
-
+ 
   useEffect(() => {
     if (!esEdicion) return;
-
+ 
     const cargarCodigo = async () => {
       try {
         const codigo = await apiRequest(`/discountCodes/${id}`);
-
+ 
+        // Aseguramos que los valores numéricos se guarden como string para mayor compatibilidad con inputs
         setForm({
           codigo: codigo.code || "",
-          porcentaje: codigo.discountPercentage || "",
+          porcentaje: codigo.discountPercentage !== undefined ? String(codigo.discountPercentage) : "",
           fechaExpiracion: codigo.expirationDate
             ? codigo.expirationDate.split("T")[0]
             : "",
-          limiteUso: codigo.usageLimit || "",
+          limiteUso: codigo.usageLimit !== undefined ? String(codigo.usageLimit) : "",
           estado: codigo.isActive ? "activo" : "inactivo",
         });
       } catch (err) {
-        setApiError(err.message);
+        Swal.fire({
+          title: "Error de carga",
+          text: "No se pudieron obtener los datos del código.",
+          icon: "error",
+          confirmButtonColor: "#e8a0a0",
+        });
       }
     };
-
+ 
     cargarCodigo();
   }, [id, esEdicion]);
-
+ 
   return (
     <div
       className="min-h-screen bg-[#f5f0eb]"
@@ -169,13 +188,7 @@ export default function AgregarDescuento() {
                 : "Complete los datos para agregar un código de descuento"}
             </p>
           </div>
-
-          {apiError && (
-            <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
-              {apiError}
-            </div>
-          )}
-
+ 
           <div className="bg-white rounded-2xl shadow-sm border border-[#ece6df] p-8">
             <div className="flex gap-8">
               <div className="flex-1 flex flex-col gap-5">
@@ -205,7 +218,7 @@ export default function AgregarDescuento() {
                     </span>
                   )}
                 </div>
-
+ 
                 {/* Porcentaje + Límite */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
@@ -254,7 +267,7 @@ export default function AgregarDescuento() {
                     )}
                   </div>
                 </div>
-
+ 
                 {/* Fecha de expiración */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-semibold text-[#5a4a4a]">
@@ -273,7 +286,7 @@ export default function AgregarDescuento() {
                     </span>
                   )}
                 </div>
-
+ 
                 {/* Estado */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-semibold text-[#5a4a4a]">
@@ -286,6 +299,7 @@ export default function AgregarDescuento() {
                     ].map((opt) => (
                       <button
                         key={opt.value}
+                        type="button"
                         onClick={() =>
                           setForm((prev) => ({ ...prev, estado: opt.value }))
                         }
@@ -300,22 +314,18 @@ export default function AgregarDescuento() {
                   </div>
                 </div>
               </div>
-
+ 
               <div className="w-72 flex flex-col justify-end gap-4">
                 <button
                   onClick={handleSubmit}
-                  disabled={loading || success}
-                  className={`w-full font-bold py-3 rounded-xl text-sm transition-all shadow-sm ${success ? "bg-green-400 text-white cursor-default" : loading ? "bg-[#e8c898] text-white cursor-wait" : "bg-[#e8a0a0] hover:bg-[#d89090] text-white"}`}
+                  disabled={loading}
+                  className={`w-full font-bold py-3 rounded-xl text-sm transition-all shadow-sm ${loading ? "bg-[#e8c898] text-white cursor-wait" : "bg-[#e8a0a0] hover:bg-[#d89090] text-white"}`}
                 >
-                  {success
-                    ? esEdicion
-                      ? "¡Código actualizado!"
-                      : "¡Código agregado!"
-                    : loading
-                      ? "Guardando..."
-                      : esEdicion
-                        ? "Actualizar código"
-                        : "Agregar código"}
+                  {loading
+                    ? "Guardando..."
+                    : esEdicion
+                      ? "Actualizar código"
+                      : "Agregar código"}
                 </button>
               </div>
             </div>
@@ -323,5 +333,5 @@ export default function AgregarDescuento() {
         </div>
       </div>
     </div>
-  );
+  ); 
 }

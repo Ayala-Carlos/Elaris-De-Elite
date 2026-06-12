@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom"; // Importamos Link para la navegación
 import Sidebar from "../components/BarraLateral.jsx";
 import StatCard from "../components/TarjetaEstadistica.jsx";
 import TopNavbar from "../components/BarraNavegacion.jsx";
@@ -28,13 +29,17 @@ const ventasData = [
 ];
 
 const STATUS_COLOR = {
-  Completado: "text-[#c0a080]",
+  Completado: "text-[#a3d2a5]",
+  completed: "text-[#a3d2a5]",
   "En proceso": "text-[#e8a090]",
+  processing: "text-[#e8a090]",
   Pendiente: "text-[#c0392b]",
+  pending: "text-[#c0392b]",
 };
 
 export default function Dashboard() {
   const [pedidos, setPedidos] = useState([]);
+  const [productosMasVendidos, setProductosMasVendidos] = useState([]); // Estado para productos TOP
   const [stats, setStats] = useState([
     { label: "Ventas", value: "—", bg: "bg-[#c8a87a]", icon: "💲" },
     { label: "Productos", value: "—", bg: "bg-[#e8a0a0]", icon: "✦" },
@@ -55,10 +60,10 @@ export default function Dashboard() {
         const listaClientes = Array.isArray(clientesData) ? clientesData : [];
         const listaProductos = Array.isArray(productosData) ? productosData : [];
 
-        // Calcular ventas totales de pedidos completados
+        // 1. Calcular ventas totales de pedidos completados
         const totalVentas = listaPedidos
-          .filter((p) => p.orderStatus === "Completado" || p.orderStatus === "completed" || p.status === "Completado" || p.status === "completed")
-          .reduce((acc, p) => acc + Number(p.total || p.totalAmount || 0), 0);
+          .filter((p) => ["Completado", "completed"].includes(p.orderStatus || p.status))
+          .reduce((acc, p) => acc + Number(p.total || p.totalAmount || p.cartId?.totalAmount || 0), 0);
 
         setStats([
           { label: "Ventas", value: `$${totalVentas.toFixed(2)}`, bg: "bg-[#c8a87a]", icon: "💲" },
@@ -67,8 +72,41 @@ export default function Dashboard() {
           { label: "Pedidos", value: String(listaPedidos.length), bg: "bg-[#c0392b]", icon: "🛍" },
         ]);
 
-        // Mostrar los últimos 3 pedidos en la tabla
+        // 2. Mostrar los últimos 3 pedidos en la tabla
         setPedidos(listaPedidos.slice(0, 3));
+
+        // 3. Mapear y calcular dinámicamente los productos más vendidos desde las órdenes
+        const conteoProductos = {};
+
+        listaPedidos.forEach((pedido) => {
+          const productosEnCarrito = pedido.cartId?.products || [];
+          productosEnCarrito.forEach((item) => {
+            const producto = item.productId;
+            if (producto && producto._id) {
+              const idProd = producto._id;
+              const nombreProd = producto.name || "Producto sin nombre";
+              const precioProd = producto.price || 0;
+              const cantidad = item.quantity || 1;
+
+              if (!conteoProductos[idProd]) {
+                conteoProductos[idProd] = {
+                  name: nombreProd,
+                  price: precioProd,
+                  totalVendido: 0,
+                };
+              }
+              conteoProductos[idProd].totalVendido += cantidad;
+            }
+          });
+        });
+
+        // Ordenar de mayor a menor cantidad vendida y extraer los 3 mejores
+        const topProductos = Object.values(conteoProductos)
+          .sort((a, b) => b.totalVendido - a.totalVendido)
+          .slice(0, 3);
+
+        setProductosMasVendidos(topProductos);
+
       } catch (err) {
         console.error("Error cargando datos del dashboard:", err);
       }
@@ -85,9 +123,7 @@ export default function Dashboard() {
 
         <div className="flex-1 flex flex-col gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#3b2a2a]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-              Dashboard
-            </h1>
+            <h1 className="text-2xl font-bold text-[#3b2a2a]">Dashboard</h1>
             <p className="text-sm text-[#7a6a6a] mt-0.5">Resumen general de la tienda</p>
           </div>
 
@@ -102,19 +138,24 @@ export default function Dashboard() {
             <div className="bg-white rounded-2xl border border-[#ede8e0] p-5">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="font-bold text-[#3b2a2a] text-sm">Pedidos recientes</h2>
-                <span className="text-[#c8a87a] text-xs cursor-pointer hover:underline">ver todos</span>
+                <Link to="/pedidos" className="text-[#c8a87a] text-xs font-semibold hover:underline">
+                  ver todos
+                </Link>
               </div>
               <div className="flex flex-col gap-3">
                 {pedidos.length === 0 ? (
                   <p className="text-xs text-[#9a8a8a] text-center py-4">Sin pedidos recientes</p>
                 ) : (
                   pedidos.map((p, i) => {
-                    const nombre = p.customerName || p.cliente || "Cliente";
+                    const nombre = p.cartId?.customerId?.name || p.customerName || p.cliente || "Cliente";
                     const id = p._id ? `ORD-${p._id.slice(-4).toUpperCase()}` : "—";
-                    const fecha = p.createdAt ? new Date(p.createdAt).toLocaleDateString("es-SV") : "—";
-                    const monto = p.total || p.totalAmount ? `$${(p.total || p.totalAmount).toFixed(2)}` : "—";
-                    const estado = p.status || "Pendiente";
+                    const fechaRaw = p.orderDate || p.createdAt;
+                    const fecha = fechaRaw ? new Date(fechaRaw).toLocaleDateString("es-SV") : "—";
+                    const total = p.cartId?.totalAmount || p.total || p.totalAmount;
+                    const monto = total ? `$${Number(total).toFixed(2)}` : "—";
+                    const estado = p.orderStatus || p.status || "Pendiente";
                     const color = STATUS_COLOR[estado] || "text-[#7a6a6a]";
+                    
                     return (
                       <div key={i}>
                         <div className="flex justify-between items-start">
@@ -124,7 +165,7 @@ export default function Dashboard() {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-semibold text-[#3b2a2a]">{monto}</p>
-                            <p className={`text-xs font-semibold ${color}`}>{estado}</p>
+                            <p className={`text-xs font-bold ${color}`}>{estado}</p>
                           </div>
                         </div>
                         {i < pedidos.length - 1 && <div className="border-t border-[#ede8e0] mt-3" />}
@@ -135,17 +176,40 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Productos más vendidos — estático mientras no haya endpoint específico */}
+            {/* Productos más vendidos dinámicos */}
             <div className="bg-white rounded-2xl border border-[#ede8e0] p-5">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="font-bold text-[#3b2a2a] text-sm">Productos más vendidos</h2>
-                <span className="text-[#c8a87a] text-xs cursor-pointer hover:underline">ver todos</span>
+                <Link to="/productos" className="text-[#c8a87a] text-xs font-semibold hover:underline">
+                  ver todos
+                </Link>
               </div>
-              <p className="text-xs text-[#9a8a8a] text-center py-4">Próximamente disponible</p>
+              <div className="flex flex-col gap-3">
+                {productosMasVendidos.length === 0 ? (
+                  <p className="text-xs text-[#9a8a8a] text-center py-4">No hay datos de ventas aún</p>
+                ) : (
+                  productosMasVendidos.map((prod, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-sm font-semibold text-[#3b2a2a]">{prod.name}</p>
+                          <p className="text-xs text-[#7a6a6a]">Precio: ${Number(prod.price).toFixed(2)}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="bg-[#f5f0eb] text-[#3b2a2a] text-xs font-bold px-2.5 py-1 rounded-full">
+                            {prod.totalVendido} uds
+                          </span>
+                        </div>
+                      </div>
+                      {i < productosMasVendidos.length - 1 && <div className="border-t border-[#ede8e0] mt-3" />}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Chart */}
+          {/* Gráfico */}
           <div className="bg-white rounded-2xl border border-[#ede8e0] p-5">
             <h2 className="font-bold text-[#3b2a2a] text-sm mb-4">Ventas en los últimos 7 días</h2>
             <ResponsiveContainer width="100%" height={180}>

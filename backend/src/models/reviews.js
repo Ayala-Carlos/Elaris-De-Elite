@@ -7,7 +7,7 @@ const reviewsSchema = new Schema({
     },
     idClient:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "client"
+        ref: "customers"
     },
     rating:{
         type: Number,

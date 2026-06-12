@@ -68,7 +68,9 @@ productsController.createProduct = async (req, res) => {
 
     if (Array.isArray(mainFeatures)) {
       mainFeatures = mainFeatures
-        .map((feature) => (typeof feature === "string" ? feature : feature?.feature))
+        .map((feature) =>
+          typeof feature === "string" ? feature : feature?.feature
+        )
         .filter(Boolean)
         .map((feature) => ({ feature }));
     }
@@ -167,7 +169,9 @@ productsController.updateProduct = async (req, res) => {
 
     if (Array.isArray(mainFeatures)) {
       mainFeatures = mainFeatures
-        .map((feature) => (typeof feature === "string" ? feature : feature?.feature))
+        .map((feature) =>
+          typeof feature === "string" ? feature : feature?.feature
+        )
         .filter(Boolean)
         .map((feature) => ({ feature }));
     }
@@ -177,16 +181,20 @@ productsController.updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    //Delete old images from Cloudinary
-    for (const img of productFound.images) {
-      await cloudinary.uploader.destroy(img.public_id);
-    }
+    let images = productFound.images;
 
-    // Create new images array from the uploaded files
-    const images = req.files.map((file) => ({
-      image: file.path,
-      public_id: file.filename,
-    }));
+    if (req.files && req.files.length > 0) {
+      // eliminar imágenes anteriores
+      for (const img of productFound.images) {
+        await cloudinary.uploader.destroy(img.public_id);
+      }
+
+      // guardar nuevas imágenes
+      images = req.files.map((file) => ({
+        image: file.path,
+        public_id: file.filename,
+      }));
+    }
 
     //Validate that all the required fields are filled
     if (
@@ -233,7 +241,7 @@ productsController.updateProduct = async (req, res) => {
         mainFeatures,
         images,
       },
-      { new: true },
+      { new: true }
     );
 
     if (!updatedProduct) {
@@ -268,19 +276,20 @@ productsController.deleteProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
     return res.status(200).json({ message: "Product deleted" });
-    } catch (error) {
-        console.log("error: " + error);
-        return res.status(500).json({ message: "Internal Server Error" });
-    }
+  } catch (error) {
+    console.log("error: " + error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 //SEARCH by name
 productsController.searchProductbyname = async (req, res) => {
   try {
     const { name } = req.body; //Request the name of the product that we want to search
-    const products = await productModels.find({ name: { $regex: name, $options: "i" } }) //Find the products that match the name, we use regex to have a case insensitive search
-    .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
-    .populate("idBrand", "name"); //Populate the idBrand field with the name of the brand, this is used to display the name of the brand in the frontend
+    const products = await productModels
+      .find({ name: { $regex: name, $options: "i" } }) //Find the products that match the name, we use regex to have a case insensitive search
+      .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
+      .populate("idBrand", "name"); //Populate the idBrand field with the name of the brand, this is used to display the name of the brand in the frontend
     if (products.length === 0) {
       return res.status(404).json({ message: "Product not found" });
     }
@@ -293,153 +302,177 @@ productsController.searchProductbyname = async (req, res) => {
 
 //Count products
 productsController.countProducts = async (req, res) => {
-    try {
-        const count = await productModels.countDocuments() //Count the number of products in the database
-        return res.status(200).json({count}) //Send the count of products
-    } catch (error) {
-        console.error("Error counting products:", error);
-        res.status(500).json({message: "Internal server error"})
-    }
-}
+  try {
+    const count = await productModels.countDocuments(); //Count the number of products in the database
+    return res.status(200).json({ count }); //Send the count of products
+  } catch (error) {
+    console.error("Error counting products:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 //Search by the name of the category
 productsController.searchByCategory = async (req, res) => {
-    try {
-        const { name } = req.body; //Request the name of the category that we want to search
-        const category = await categoriesModels.findOne({ name: { $regex: name, $options: "i" } }); //Find the category by name
-        if (!category) {
-            return res.status(404).json({ message: "Category not found" });
-        }
+  try {
+    const { name } = req.body; //Request the name of the category that we want to search
+    const category = await categoriesModels.findOne({
+      name: { $regex: name, $options: "i" },
+    }); //Find the category by name
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
 
-        const products = await productModels.find({ idCategory: category._id }) //Find the products that match the name of the category
-        .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
-        .populate("idBrand", "name");
-        if (products.length === 0) {
-            return res.status(404).json({message: "Products not found"})
-        }
-        return res.status(200).json(products)
+    const products = await productModels
+      .find({ idCategory: category._id }) //Find the products that match the name of the category
+      .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
+      .populate("idBrand", "name");
+    if (products.length === 0) {
+      return res.status(404).json({ message: "Products not found" });
     }
-    catch (error) {
-        console.error("Error searching products by category:", error);
-        res.status(500).json({message: "Internal server error"})
-    }
-}
+    return res.status(200).json(products);
+  } catch (error) {
+    console.error("Error searching products by category:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 //Search by the name of the brand
 productsController.searchByBrand = async (req, res) => {
-    try {
-        const { name } = req.body; //Request the name of the brand that we want to search
-        const brand = await brandModels.findOne({ name: { $regex: name, $options: "i" } });
-        if (!brand) {
-            return res.status(404).json({ message: "Brand not found" });
-        }
-        const products = await productModels.find({ idBrand: brand._id }) //Find the products that match the name of the brand
-        .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
-        .populate("idBrand", "name");
-        if (products.length === 0) {
-            return res.status(404).json({message: "Products not found"})
-        }
-        return res.status(200).json(products)
-    }   
-    catch (error) {
-        console.error("Error searching products by brand:", error);
-        res.status(500).json({message: "Internal server error"})
+  try {
+    const { name } = req.body; //Request the name of the brand that we want to search
+    const brand = await brandModels.findOne({
+      name: { $regex: name, $options: "i" },
+    });
+    if (!brand) {
+      return res.status(404).json({ message: "Brand not found" });
     }
-}
+    const products = await productModels
+      .find({ idBrand: brand._id }) //Find the products that match the name of the brand
+      .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
+      .populate("idBrand", "name");
+    if (products.length === 0) {
+      return res.status(404).json({ message: "Products not found" });
+    }
+    return res.status(200).json(products);
+  } catch (error) {
+    console.error("Error searching products by brand:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 //Search products by price range
 productsController.searchByPriceRange = async (req, res) => {
-    try {
-        const { minPrice, maxPrice } = req.body; //Request the minimum and maximum price that we want to search
-        if (isNaN(minPrice) || isNaN(maxPrice) || minPrice < 0 || maxPrice < 0) {
-            return res.status(400).json({ message: "Price must be a positive number" });
-        }
-        const products = await productModels.find({ price: { $gte: minPrice, $lte: maxPrice } }) //Find the products that match the price range
-        .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
-        .populate("idBrand", "name");
-        if (products.length === 0) {
-            return res.status(404).json({message: "Products not found"})
-        }       
-        return res.status(200).json(products)
-    }   
-    catch (error) {
-        console.error("Error searching products by price range:", error);
-        res.status(500).json({message: "Internal server error"})
+  try {
+    const { minPrice, maxPrice } = req.body; //Request the minimum and maximum price that we want to search
+    if (isNaN(minPrice) || isNaN(maxPrice) || minPrice < 0 || maxPrice < 0) {
+      return res
+        .status(400)
+        .json({ message: "Price must be a positive number" });
     }
-}
+    const products = await productModels
+      .find({ price: { $gte: minPrice, $lte: maxPrice } }) //Find the products that match the price range
+      .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
+      .populate("idBrand", "name");
+    if (products.length === 0) {
+      return res.status(404).json({ message: "Products not found" });
+    }
+    return res.status(200).json(products);
+  } catch (error) {
+    console.error("Error searching products by price range:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 //Search products by stock availability
 productsController.searchByStockAvailability = async (req, res) => {
-    try {        const { inStock } = req.body; //Request if we want to search products that are in stock or out of stock
-        if (typeof inStock !== "boolean") {
-            return res.status(400).json({ message: "Invalid inStock value" });
-        }
-        const products = await productModels.find({ stock: inStock ? { $gt: 0 } : 0 }) //Find the products that match the stock availability
-        .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
-        .populate("idBrand", "name");
-        if (products.length === 0) {
-            return res.status(404).json({message: "Products not found"})
-        }
-        return res.status(200).json(products)
-    }   
-    catch (error) {
-        console.error("Error searching products by stock availability:", error);
-        res.status(500).json({message: "Internal server error"})
+  try {
+    const { inStock } = req.body; //Request if we want to search products that are in stock or out of stock
+    if (typeof inStock !== "boolean") {
+      return res.status(400).json({ message: "Invalid inStock value" });
     }
-}
+    const products = await productModels
+      .find({ stock: inStock ? { $gt: 0 } : 0 }) //Find the products that match the stock availability
+      .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
+      .populate("idBrand", "name");
+    if (products.length === 0) {
+      return res.status(404).json({ message: "Products not found" });
+    }
+    return res.status(200).json(products);
+  } catch (error) {
+    console.error("Error searching products by stock availability:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 //Search by colors
 productsController.searchByColor = async (req, res) => {
-    try {
-        const { color } = req.body; //Request the color that we want to search
-        const products = await productModels.find({ color: { $regex: color, $options: "i" } }) //Find the products that match the color, we use regex to have a case insensitive search
-        .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
-        .populate("idBrand", "name");
-        if (products.length === 0) {
-            return res.status(404).json({message: "Products not found"})
-        }
-        return res.status(200).json(products)
+  try {
+    const { color } = req.body; //Request the color that we want to search
+    const products = await productModels
+      .find({ color: { $regex: color, $options: "i" } }) //Find the products that match the color, we use regex to have a case insensitive search
+      .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
+      .populate("idBrand", "name");
+    if (products.length === 0) {
+      return res.status(404).json({ message: "Products not found" });
     }
-    catch (error) {
-        console.error("Error searching products by color:", error);
-        res.status(500).json({message: "Internal server error"})
-    }
-}
+    return res.status(200).json(products);
+  } catch (error) {
+    console.error("Error searching products by color:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 //Search by size
 productsController.searchBySize = async (req, res) => {
-    try {
-        const { size } = req.body; //Request the size that we want to search
-        const products = await productModels.find({ size: { $regex: size, $options: "i" } }) //Find the products that match the size, we use regex to have a case insensitive search
-        .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
-        .populate("idBrand", "name");
-        if (products.length === 0) {
-            return res.status(404).json({message: "Products not found"})
-        }
-        return res.status(200).json(products)
+  try {
+    const { size } = req.body; //Request the size that we want to search
+    const products = await productModels
+      .find({ size: { $regex: size, $options: "i" } }) //Find the products that match the size, we use regex to have a case insensitive search
+      .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
+      .populate("idBrand", "name");
+    if (products.length === 0) {
+      return res.status(404).json({ message: "Products not found" });
     }
-    catch (error) {
-        console.error("Error searching products by size:", error);
-        res.status(500).json({message: "Internal server error"})
-    }
-}
+    return res.status(200).json(products);
+  } catch (error) {
+    console.error("Error searching products by size:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 //Search by main features
 productsController.searchByMainFeatures = async (req, res) => {
-    try {
-        const { feature } = req.body; //Request the main feature that we want to search
-        const products = await productModels.find({ "mainFeatures.feature": { $regex: feature, $options: "i" } }) //Find the products that match the main feature, we use regex to have a case insensitive search
-        .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
-        .populate("idBrand", "name");   
-        if (products.length === 0) {
-            return res.status(404).json({message: "Products not found"})
-        }   
-        return res.status(200).json(products)
+  try {
+    const { feature } = req.body; //Request the main feature that we want to search
+    const products = await productModels
+      .find({ "mainFeatures.feature": { $regex: feature, $options: "i" } }) //Find the products that match the main feature, we use regex to have a case insensitive search
+      .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
+      .populate("idBrand", "name");
+    if (products.length === 0) {
+      return res.status(404).json({ message: "Products not found" });
     }
-    catch (error) {
-        console.error("Error searching products by main features:", error);
-        res.status(500).json({message: "Internal server error"})
-    }    
-}
+    return res.status(200).json(products);
+  } catch (error) {
+    console.error("Error searching products by main features:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//Search products by id
+productsController.getProductById = async (req, res) => {
+  try {
+    const product = await productModels
+      .findById(req.params.id) //Find the product by id
+      .populate("idCategory", "name") //Populate the idCategory field with the name of the category, this is used to display the name of the category in the frontend
+      .populate("idBrand", "name"); //Populate the idBrand field with the name of the brand, this is used to display the name of the brand in the frontend
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    return res.status(200).json(product);
+  } catch (error) {
+    console.error("Error searching product by id:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 export default productsController;

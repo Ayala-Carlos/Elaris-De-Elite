@@ -1,7 +1,8 @@
-import { Schema, model } from "mongoose"
+import { Schema, model } from "mongoose";
 
 const marketingCampaignSchema = new Schema({
-    campaingName:{
+
+    campaignName: {
         type: String
     },
     platform: {
@@ -23,11 +24,10 @@ const marketingCampaignSchema = new Schema({
         type: String
     }
 }, {
-    // timestamps: true, add automatically createdAt and updatedAt fields to the collection documents, which makes it easier to track when records were created or modified.
+    // timestamps: true agrega automáticamente los campos createdAt y updatedAt a la colección.
     timestamps: true,
-    // strict: false, allows adding additional fields to the collection documents, which makes it easier to have flexibility in the data structure.
+    // strict: false permite flexibilidad para añadir campos adicionales si es necesario.
     strict: false
-})
+});
 
-//"marketingCampaings" is the name of the collection that is saved in the DB
-export default model("marketingCampaings", marketingCampaignSchema)
+export default model("marketingCampaings", marketingCampaignSchema);

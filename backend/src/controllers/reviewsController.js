@@ -6,7 +6,7 @@ import reviewsModel from "../models/reviews.js";
 //SELECT
 reviewsController.getReviews = async (req, res) => {
     try {
-        const reviews = await reviewsModel.find()
+        const reviews = await reviewsModel.find().populate("idOrder").populate("idClient"); //Buscamos todas las reseñas y poblamos los campos idOrder e idClient para mostrar la información relacionada
         res.status(200).json({ message: "Reviews found", reviews })
     } catch (error) {
         res.status(500).json({ message: "Error finding review" });

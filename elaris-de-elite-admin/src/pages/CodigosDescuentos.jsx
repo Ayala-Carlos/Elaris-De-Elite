@@ -5,9 +5,10 @@ import TopNavbar from "../components/BarraNavegacion.jsx";
 import DataTable from "../components/TablaDatos.jsx";
 import SearchFilterBar from "../components/BarraBusqueda.jsx";
 import { Pencil, Trash2 } from "lucide-react";
-
+import Swal from "sweetalert2"; // Importamos SweetAlert2
+ 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
-
+ 
 async function apiRequest(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
     credentials: "include",
@@ -21,12 +22,12 @@ async function apiRequest(path, options = {}) {
         ? JSON.stringify(options.body)
         : options.body,
   });
-
+ 
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || "Error en la solicitud");
   return data;
 }
-
+ 
 export default function CodigosDescuento() {
   const navigate = useNavigate();
   const [codigosList, setCodigosList] = useState([]);
@@ -34,44 +35,69 @@ export default function CodigosDescuento() {
   const [filtroEstado, setFiltroEstado] = useState("Todos");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+ 
   useEffect(() => {
     apiRequest("/discountCodes")
       .then((data) => setCodigosList(Array.isArray(data) ? data : []))
       .catch(() => setError("No se pudieron cargar los códigos."))
       .finally(() => setLoading(false));
   }, []);
-
+ 
   const handleEliminar = async (id) => {
-    if (!window.confirm("¿Eliminar este código?")) return;
-    try {
-      await apiRequest(`/discountCodes/${id}`, { method: "DELETE" });
-      setCodigosList((prev) => prev.filter((c) => c._id !== id));
-    } catch (err) {
-      alert("Error al eliminar: " + err.message);
-    }
+    // Alerta de confirmación estilizada con SweetAlert
+    Swal.fire({
+      title: "¿Eliminar este código?",
+      text: "Esta acción no se puede deshacer de forma directa.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#7a6a6a",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+      background: "#ffffff"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await apiRequest(`/discountCodes/${id}`, { method: "DELETE" });
+          setCodigosList((prev) => prev.filter((c) => (c._id !== id && c.id !== id)));
+         
+          Swal.fire({
+            title: "Eliminado",
+            text: "El código ha sido removido.",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false
+          });
+        } catch (err) {
+          Swal.fire({
+            title: "Error",
+            text: "No se pudo eliminar: " + err.message,
+            icon: "error"
+          });
+        }
+      }
+    });
   };
-
+ 
   const codigosFiltrados = codigosList.filter((item) => {
-    const codigo = item.code || "";
+    const codigo = item.code || item.codigo || "";
     const activo = item.isActive === true;
-
+ 
     const coincideTexto = codigo
       .toLowerCase()
-      .includes(textoBusqueda.toLowerCase()); 
-
-    const coincideEstado = 
+      .includes(textoBusqueda.toLowerCase());
+ 
+    const coincideEstado =
       filtroEstado === "Todos" ||
       (filtroEstado === "Activos" && activo) ||
       (filtroEstado === "Expirados" && !activo);
-
+ 
     return coincideTexto && coincideEstado;
   });
-
+ 
   const activos = codigosList.filter((c) => c.isActive === true).length;
-
   const expirados = codigosList.length - activos;
-
+ 
   return (
     <div
       className="min-h-screen bg-[#f5f0eb]"
@@ -97,7 +123,7 @@ export default function CodigosDescuento() {
               Agregar código
             </button>
           </div>
-
+ 
           <div className="grid grid-cols-3 gap-4">
             {[
               { label: "Total de códigos", value: String(codigosList.length) },
@@ -115,7 +141,7 @@ export default function CodigosDescuento() {
               </div>
             ))}
           </div>
-
+ 
           <SearchFilterBar
             placeholder="Ingrese el nombre del código"
             filters={["Todos", "Activos", "Expirados"]}
@@ -123,7 +149,7 @@ export default function CodigosDescuento() {
             onFilterClick={(f) => setFiltroEstado(f)}
             onSearchChange={(val) => setTextoBusqueda(val)}
           />
-
+ 
           {loading ? (
             <p className="text-center text-[#9a8a8a] py-10">
               Cargando códigos...
@@ -143,15 +169,15 @@ export default function CodigosDescuento() {
               gridCols="grid-cols-[1.5fr_2fr_1.5fr_1fr_1fr_1fr]"
               data={codigosFiltrados}
               renderRow={(item) => {
+                const targetId = item._id || item.id;
                 const codigo = item.code || item.codigo || "—";
-                const porcentaje =
-                  item.discountPercentage || item.porcentaje || "—";
+                const porcentaje = item.discountPercentage || item.porcentaje || "—";
                 const fecha = item.expirationDate
                   ? new Date(item.expirationDate).toLocaleDateString("es-SV")
                   : item.fechaExpiracion || "—";
                 const activo = item.isActive === true;
                 const limiteUso = item.usageLimit || item.limiteUso || "—";
-
+ 
                 return (
                   <>
                     <div className="font-bold text-[#65554f] text-sm pl-2 uppercase">
@@ -174,18 +200,17 @@ export default function CodigosDescuento() {
                       {limiteUso}
                     </div>
                     <div className="flex justify-center gap-4">
+                      {/* Botón de edición optimizado y validado */}
                       <button
-                        onClick={() =>
-                          navigate(`/descuentos/editar/${item._id}`)
-                        }
+                        onClick={() => navigate(`/descuentos/editar/${targetId}`)}
                         className="text-[#d2ab7e] hover:text-[#c29b6e] transition-colors"
                         title="Editar código"
                       >
                         <Pencil size={18} />
                       </button>
-
+ 
                       <button
-                        onClick={() => handleEliminar(item._id)}
+                        onClick={() => handleEliminar(targetId)}
                         className="text-[#ef4444] hover:text-red-600 transition-colors"
                         title="Eliminar código"
                       >

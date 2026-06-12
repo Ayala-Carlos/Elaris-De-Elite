@@ -88,7 +88,7 @@ export default function Ventas() {
             <button 
               onClick={() => navigate("/descuentos")}
               className="bg-[#c8a87a] hover:bg-[#b8986a] text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors shadow-sm">
-              Codigós de descuento
+              Códigos de descuento
             </button>
           </div>
 

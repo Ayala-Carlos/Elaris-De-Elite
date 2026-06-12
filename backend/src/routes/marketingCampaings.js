@@ -25,5 +25,6 @@ router.route("/count").get(marketingCampaingsController.countMarketingCampaings)
 router.route("/:id")
 .put(marketingCampaingsController.updateMarketingCampaings)
 .delete(marketingCampaingsController.deleteMarketingCampaings)
+.get(marketingCampaingsController.getMarketingCampaignById)
 
 export default router;

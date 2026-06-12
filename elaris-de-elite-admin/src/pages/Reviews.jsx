@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "../components/BarraLateral.jsx";
 import TopNavbar from "../components/BarraNavegacion.jsx";
 import SearchFilterBar from "../components/BarraBusqueda.jsx";
+import Swal from "sweetalert2"; // Importamos SweetAlert2
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
 
@@ -37,28 +38,61 @@ export default function Resenas() {
 
   useEffect(() => {
     apiRequest("/reviews")
-      .then((data) => setReviews(Array.isArray(data) ? data : []))
+      .then((data) => {
+        const listaReviews = data.reviews || (Array.isArray(data) ? data : []);
+        setReviews(listaReviews);
+      })
       .catch(() => setError("No se pudieron cargar las reseñas."))
       .finally(() => setLoading(false));
   }, []);
 
   const handleEliminar = async (id) => {
-    if (!window.confirm("¿Eliminar esta reseña?")) return;
-    try {
-      await apiRequest(`/reviews/${id}`, { method: "DELETE" });
-      setReviews((prev) => prev.filter((r) => r._id !== id));
-    } catch (err) {
-      alert("Error al eliminar: " + err.message);
-    }
+    // Alerta de confirmación personalizada con SweetAlert2
+    Swal.fire({
+      title: "¿Eliminar esta reseña?",
+      text: "Esta acción removerá el comentario de forma permanente.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#7a6a6a",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+      background: "#ffffff"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await apiRequest(`/reviews/${id}`, { method: "DELETE" });
+          setReviews((prev) => prev.filter((r) => r._id !== id));
+          
+          // Toast o notificación rápida de éxito
+          Swal.fire({
+            title: "¡Eliminada!",
+            text: "La reseña ha sido removida con éxito.",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false
+          });
+        } catch (err) {
+          // Captura de errores en el borrado
+          Swal.fire({
+            title: "Error",
+            text: "No se pudo eliminar la reseña: " + err.message,
+            icon: "error"
+          });
+        }
+      }
+    });
   };
 
   const reviewsFiltradas = reviews.filter((r) => {
-    const nombre = r.customerName || r.name || r.userName || "";
-    const orderId = r.orderId || r.order || "";
+    const nombre = r.idClient?.name || "";
+    const orderId = r.idOrder?._id || r.idOrder || "";
+    
     const coincideTexto =
       nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
       String(orderId).includes(busqueda);
-    const estrellas = r.rating || r.stars || 0;
+      
+    const estrellas = r.rating || 0;
     const coincideEstrellas = filtro === "Todos" || estrellas === parseInt(filtro);
     return coincideTexto && coincideEstrellas;
   });
@@ -77,8 +111,8 @@ export default function Resenas() {
           <div className="grid grid-cols-3 gap-6">
             {[
               { label: "Total de reseñas", value: String(reviews.length) },
-              { label: "Promedio de estrellas", value: reviews.length ? (reviews.reduce((a, r) => a + (r.rating || r.stars || 0), 0) / reviews.length).toFixed(1) : "—" },
-              { label: "Con 5 estrellas", value: String(reviews.filter((r) => (r.rating || r.stars) === 5).length) },
+              { label: "Promedio de estrellas", value: reviews.length ? (reviews.reduce((a, r) => a + (r.rating || 0), 0) / reviews.length).toFixed(1) : "—" },
+              { label: "Con 5 estrellas", value: String(reviews.filter((r) => (r.rating) === 5).length) },
             ].map((s) => (
               <div key={s.label} className="bg-white rounded-2xl p-5 shadow-sm border border-[#ede8e0]">
                 <p className="text-xs text-[#7a6a6a] mb-1">{s.label}</p>
@@ -102,15 +136,20 @@ export default function Resenas() {
           ) : (
             <div className="flex flex-col gap-4">
               {reviewsFiltradas.map((review) => {
-                const nombre = review.customerName || review.name || review.userName || "Anónimo";
-                const estrellas = review.rating || review.stars || 0;
-                const orderId = review.orderId || review.order || "—";
-                const fecha = review.createdAt ? new Date(review.createdAt).toLocaleDateString("es-SV") : "—";
-                const comentario = review.comment || review.review || review.description || "";
+                const nombre = review.idClient?.name || "Anónimo";
+                const estrellas = review.rating || 0;
+                const orderId = review.idOrder?._id || review.idOrder || "—";
+                const fechaOrigen = review.reviewDate || review.createdAt;
+                const fecha = fechaOrigen ? new Date(fechaOrigen).toLocaleDateString("es-SV") : "—";
+                const comentario = review.comment || "";
 
                 return (
                   <div key={review._id} className="bg-white rounded-2xl p-6 shadow-sm border border-[#ede8e0] relative flex flex-col gap-3 hover:shadow-md transition-shadow">
-                    <button onClick={() => handleEliminar(review._id)} className="absolute top-6 right-6 text-[#ef4444] hover:scale-110 transition-transform">
+                    <button 
+                      onClick={() => handleEliminar(review._id)} 
+                      className="absolute top-6 right-6 text-[#ef4444] hover:scale-110 transition-transform"
+                      title="Eliminar reseña"
+                    >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -118,7 +157,7 @@ export default function Resenas() {
                     <h2 className="text-lg font-bold text-[#3b2a2a]">{nombre}</h2>
                     <StarRating rating={estrellas} />
                     <div className="flex gap-8 text-[13px] text-[#9a8a8a] font-medium">
-                      <p>ID DE COMPRA: <span className="text-[#c8a87a]">{String(orderId).slice(-6).toUpperCase()}</span></p>
+                      <p>ID DE COMPRA: <span className="text-[#c8a87a]">{orderId !== "—" ? String(orderId).slice(-6).toUpperCase() : "—"}</span></p>
                       <p>FECHA: <span className="text-[#c8a87a]">{fecha}</span></p>
                     </div>
                     {comentario && (

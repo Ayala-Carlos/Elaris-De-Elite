@@ -24,6 +24,7 @@ router.route("/searchByMainFeatures").post(productsController.searchByMainFeatur
 
 router.route("/:id")
 .put(upload.array("images"), productsController.updateProduct)
-.delete(productsController.deleteProduct);
+.delete(productsController.deleteProduct)
+.get(productsController.getProductById);
 
 export default router;

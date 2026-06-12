@@ -1,9 +1,8 @@
 const marketingCampaingsController = {};
-//Importamos el schema de la colección que vamos a ocupar
-
+// Importamos el schema de la colección que vamos a ocupar
 import marketingCampaingsModel from "../models/marketingCampaings.js";
 
-//SELECT
+// SELECT ALL
 marketingCampaingsController.getMarketingCampaings = async (req, res) => {
   try {
     const marketingCampaings = await marketingCampaingsModel.find();
@@ -14,14 +13,24 @@ marketingCampaingsController.getMarketingCampaings = async (req, res) => {
   }
 };
 
-//INSERT
+// INSERT
 marketingCampaingsController.createMarketingCampaings = async (req, res) => {
   try {
-    const { campaingName, platform, assignedBudget, description, startDate, endDate, status } = req.body; //Pedimos todos los datos que se van a insertar
-    const newMarketingCampaign = new marketingCampaingsModel({ campaingName, platform, assignedBudget, description, startDate, endDate, status }); //Mandamos los datos que se solicitan
-    //Guardamos los datos
+    // Corregido: campaignName
+    const { campaignName, platform, assignedBudget, description, startDate, endDate, status } = req.body; 
+    
+    // Corregido: pasamos campaignName al nuevo documento
+    const newMarketingCampaign = new marketingCampaingsModel({ 
+      campaignName, 
+      platform, 
+      assignedBudget, 
+      description, 
+      startDate, 
+      endDate, 
+      status 
+    }); 
+    
     await newMarketingCampaign.save();
-    //Si se guardan los datos enviamos un mensaje de confirmación
     res.status(201).json({ message: "Marketing campaign saved" });
   } catch (error) {
     console.log("error: " + error);
@@ -29,15 +38,17 @@ marketingCampaingsController.createMarketingCampaings = async (req, res) => {
   }
 };
 
-//UPDATE
+// UPDATE
 marketingCampaingsController.updateMarketingCampaings = async (req, res) => {
   try {
-    const { campaingName, platform, assignedBudget, description, startDate, endDate, status } = req.body; //Pedimos todos los datos que se van a actualizar
+    // Corregido: campaignName
+    const { campaignName, platform, assignedBudget, description, startDate, endDate, status } = req.body; 
+    
     await marketingCampaingsModel.findByIdAndUpdate(
       req.params.id,
       {
-        //Buscamos el campaign por su id y actualizamos los datos
-        campaingName,
+        // Corregido: actualizamos con la propiedad correcta
+        campaignName,
         platform,
         assignedBudget,
         description,
@@ -48,7 +59,6 @@ marketingCampaingsController.updateMarketingCampaings = async (req, res) => {
       { new: true },
     );
 
-    //Si se actualizan los datos enviamos un mensaje de confirmación
     res.status(200).json({ message: "Marketing campaign updated" });
   } catch (error) {
     console.log("error: " + error);
@@ -56,7 +66,7 @@ marketingCampaingsController.updateMarketingCampaings = async (req, res) => {
   }
 };
 
-//DELETE
+// DELETE
 marketingCampaingsController.deleteMarketingCampaings = async (req, res) => {
   try {
     await marketingCampaingsModel.findByIdAndDelete(req.params.id);
@@ -67,7 +77,7 @@ marketingCampaingsController.deleteMarketingCampaings = async (req, res) => {
   }
 };
 
-//Select 1 campaign (select for id)
+// SELECT BY ID
 marketingCampaingsController.getMarketingCampaignById = async (req, res) => {
   try {
     const campaignId = req.params.id || req.body.id;
@@ -84,20 +94,18 @@ marketingCampaingsController.getMarketingCampaignById = async (req, res) => {
   }
 };
 
-//Search for marketing campaign name
+// SEARCH BY NAME
 marketingCampaingsController.searchByName = async (req, res) => {
   try {
-    //#1 Request the data
-    const { campaingName } = req.body;
+    // Corregido: campaignName
+    const { campaignName } = req.body;
 
-    //#2 Search in the bd table
-    //Regex is for search for a word in the name (is "like" in sql), and options i is for ignore case sensitive (ej "laptop" and "Laptop" are the same)
+    // Corregido: hacemos la búsqueda usando la propiedad correcta en la BD
     const marketingCampaings = await marketingCampaingsModel.find({
-      campaingName: { $regex: campaingName, $options: "i" },
+      campaignName: { $regex: campaignName, $options: "i" },
     });
 
-    //#3 Response
-    if (!marketingCampaings) {
+    if (!marketingCampaings || marketingCampaings.length === 0) {
       return res.status(404).json({ message: "No marketing campaigns found" });
     }
 
@@ -108,16 +116,10 @@ marketingCampaingsController.searchByName = async (req, res) => {
   }
 };
 
-//Marketing campaigns with low budget
+// LOW BUDGET
 marketingCampaingsController.lowBudget = async (req, res) => {
   try {
-    // Search for marketing campaigns with assigned budget less than 1000
-
-    // lt: is for search for products with stock less than 5
-    // gt: is for search for products with stock greater than 5
-
     const marketingCampaings = await marketingCampaingsModel.find({ assignedBudget: { $lt: 1000 } });
-
     return res.status(200).json(marketingCampaings);
   } catch (error) {
     console.log("error: " + error);
@@ -125,20 +127,15 @@ marketingCampaingsController.lowBudget = async (req, res) => {
   }
 };
 
-//Filters that the user put
+// BUDGET RANGE
 marketingCampaingsController.searchByBudgetRange = async (req, res) => {
   try {
-    //#1 Request the min and max
     const { min, max } = req.body;
-
-    //#2 Search in db table
-    // lte: is for search for products with stock less than or equal to 5
-    // gte: is for search for products with stock greater than or equal to 5
     const marketingCampaings = await marketingCampaingsModel.find({
       assignedBudget: { $gte: min, $lte: max },
     });
 
-    if (!marketingCampaings) {
+    if (!marketingCampaings || marketingCampaings.length === 0) {
       return res.status(404).json({ message: "Marketing campaigns not found" });
     }
     return res.status(200).json(marketingCampaings);
@@ -148,11 +145,10 @@ marketingCampaingsController.searchByBudgetRange = async (req, res) => {
   }
 };
 
-//Count how many items (products in this case) are in the bd table
+// COUNT DOCUMENTS
 marketingCampaingsController.countMarketingCampaings = async (req, res) => {
   try {
     const count = await marketingCampaingsModel.countDocuments();
-
     return res.status(200).json(count);
   } catch (error) {
     console.log("error: " + error);

@@ -56,21 +56,44 @@ export default function Pedidos() {
     }
   };
 
-  const pedidosFiltrados = pedidosList.filter((pedido) => {
+  // Función adaptada exactamente a la estructura de tu Backend
+  const extraerDatosPedido = (pedido) => {
     const id = pedido._id || "";
-    const cliente = pedido.customerName || pedido.cliente || "";
+    
+    // Ruta corregida basándose en el .populate() del backend
+    const cliente = pedido.cartId?.customerId?.name || "—";
+    const email = pedido.cartId?.customerId?.email || "";
+
+    // Tu backend usa orderDate, cayendo en createdAt como respaldo
+    const fechaRaw = pedido.orderDate || pedido.createdAt;
+    const fecha = fechaRaw ? new Date(fechaRaw).toLocaleDateString("es-SV") : "—";
+
+    const total = pedido.cartId?.totalAmount || pedido.total || pedido.totalAmount;
+    const monto = total ? `$${Number(total).toFixed(2)}` : "—";
+
+    const estado = pedido.orderStatus || pedido.status || "Pendiente";
+
+    return { id, cliente, email, fecha, monto, estado };
+  };
+
+  const pedidosFiltrados = pedidosList.filter((pedido) => {
+    const { id, cliente, estado } = extraerDatosPedido(pedido);
+    
     const coincideTexto =
       id.toLowerCase().includes(textoBusqueda.toLowerCase()) ||
       cliente.toLowerCase().includes(textoBusqueda.toLowerCase());
-    const estado = pedido.orderStatus || pedido.status || "Pendiente";
-    const coincideEstado = filtroEstado === "Todos" || estado === filtroEstado ||
+      
+    const coincideEstado = 
+      filtroEstado === "Todos" || 
+      estado === filtroEstado ||
       (filtroEstado === "Completado" && estado === "completed") ||
       (filtroEstado === "Pendiente" && estado === "pending") ||
       (filtroEstado === "En proceso" && estado === "processing");
+      
     return coincideTexto && coincideEstado;
   });
 
-  // Contadores
+  // Contadores usando la misma lógica unificada de estados
   const total = pedidosList.length;
   const pendientes = pedidosList.filter((p) => ["Pendiente","pending"].includes(p.orderStatus || p.status)).length;
   const enProceso = pedidosList.filter((p) => ["En proceso","processing"].includes(p.orderStatus || p.status)).length;
@@ -119,18 +142,13 @@ export default function Pedidos() {
               gridCols="grid-cols-[1.2fr_2fr_1.2fr_1.2fr_1.2fr_1fr]"
               data={pedidosFiltrados}
               renderRow={(pedido) => {
-                const id = `ORD-${(pedido._id || "").slice(-6).toUpperCase()}`;
-                const cliente = pedido.customerName || pedido.cliente || "—";
-                const email = pedido.customerEmail || "";
-                const fecha = pedido.createdAt ? new Date(pedido.createdAt).toLocaleDateString("es-SV") : "—";
-                const total = pedido.total || pedido.totalAmount || pedido.cartId?.totalAmount;
-                const monto = total ? `$${Number(total).toFixed(2)}` : "—";
-                const estado = pedido.orderStatus || pedido.status || "Pendiente";
+                const { id, cliente, email, fecha, monto, estado } = extraerDatosPedido(pedido);
+                const idFormateado = `ORD-${(id).slice(-6).toUpperCase()}`;
                 const bgClass = STATUS_CLASSES[estado] || "bg-gray-300";
 
                 return (
                   <>
-                    <div className="text-[#7a6a6a] font-medium text-xs">{id}</div>
+                    <div className="text-[#7a6a6a] font-medium text-xs">{idFormateado}</div>
                     <div className="flex flex-col">
                       <span className="font-bold text-[#3b2a2a] leading-tight">{cliente}</span>
                       {email && <span className="text-[10px] text-[#9a8a8a]">{email}</span>}
