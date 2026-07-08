@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { getAdminSession } from "../utils/adminSession.js";
 
 const navItems = [
   { name: "Dashboard", path: "/dashboard" },
@@ -8,11 +9,13 @@ const navItems = [
   { name: "Reseñas", path: "/reviews" },
   { name: "Pedidos", path: "/pedidos"},
   {name: "Campañas de marketing", path: "/marketing"},
-  { name: "Códigos de descuentos", path: "/descuentos"}
+  { name: "Códigos de descuentos", path: "/descuentos"},
+  { name: "Administradores", path: "/administradores"}
 ];
 
 export default function BarraLateral() {
   const location = useLocation(); // Esto detecta en qué URL estás automáticamente
+  const admin = getAdminSession();
 
   return (
     <div className="w-72 min-h-[85vh] bg-white rounded-2xl flex flex-col justify-between py-6 px-4 mr-4 border border-[#ede8e0]">
@@ -34,9 +37,9 @@ export default function BarraLateral() {
 
       <div className="px-4">
         <p className="text-[#c8a87a] font-bold text-sm" style={{ fontFamily: "serif" }}>
-          Administrador
+          {admin?.name || "Administrador"}
         </p>
-        <p className="text-[#c8a87a] text-xs mt-0.5">josueadmin@elite.com</p>
+        <p className="text-[#c8a87a] text-xs mt-0.5">{admin?.email || ""}</p>
       </div>
     </div>
   );

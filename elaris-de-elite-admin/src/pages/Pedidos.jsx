@@ -21,12 +21,21 @@ async function apiRequest(path, options = {}) {
 
 const STATUS_CLASSES = {
   Completado: "bg-[#a3d2a5]",
-  completed: "bg-[#a3d2a5]",
   Pendiente: "bg-yellow-400",
-  pending: "bg-yellow-400",
   "En proceso": "bg-red-300",
-  processing: "bg-red-300",
 };
+
+// The backend stores orderStatus as free-form text: new orders created from the
+// storefront default to lowercase English ("pending"), while this admin's own
+// dropdown writes Spanish labels. Normalize to one canonical Spanish label so the
+// badge, the <select>, and the filters always agree on the same value.
+const STATUS_LABELS = {
+  pending: "Pendiente",
+  processing: "En proceso",
+  completed: "Completado",
+};
+
+const normalizeEstado = (rawEstado) => STATUS_LABELS[rawEstado] || rawEstado || "Pendiente";
 
 export default function Pedidos() {
   const [pedidosList, setPedidosList] = useState([]);
@@ -71,7 +80,7 @@ export default function Pedidos() {
     const total = pedido.cartId?.totalAmount || pedido.total || pedido.totalAmount;
     const monto = total ? `$${Number(total).toFixed(2)}` : "—";
 
-    const estado = pedido.orderStatus || pedido.status || "Pendiente";
+    const estado = normalizeEstado(pedido.orderStatus || pedido.status);
 
     return { id, cliente, email, fecha, monto, estado };
   };
@@ -83,21 +92,16 @@ export default function Pedidos() {
       id.toLowerCase().includes(textoBusqueda.toLowerCase()) ||
       cliente.toLowerCase().includes(textoBusqueda.toLowerCase());
       
-    const coincideEstado = 
-      filtroEstado === "Todos" || 
-      estado === filtroEstado ||
-      (filtroEstado === "Completado" && estado === "completed") ||
-      (filtroEstado === "Pendiente" && estado === "pending") ||
-      (filtroEstado === "En proceso" && estado === "processing");
-      
+    const coincideEstado = filtroEstado === "Todos" || estado === filtroEstado;
+
     return coincideTexto && coincideEstado;
   });
 
   // Contadores usando la misma lógica unificada de estados
   const total = pedidosList.length;
-  const pendientes = pedidosList.filter((p) => ["Pendiente","pending"].includes(p.orderStatus || p.status)).length;
-  const enProceso = pedidosList.filter((p) => ["En proceso","processing"].includes(p.orderStatus || p.status)).length;
-  const completados = pedidosList.filter((p) => ["Completado","completed"].includes(p.orderStatus || p.status)).length;
+  const pendientes = pedidosList.filter((p) => normalizeEstado(p.orderStatus || p.status) === "Pendiente").length;
+  const enProceso = pedidosList.filter((p) => normalizeEstado(p.orderStatus || p.status) === "En proceso").length;
+  const completados = pedidosList.filter((p) => normalizeEstado(p.orderStatus || p.status) === "Completado").length;
 
   return (
     <div className="min-h-screen bg-[#f5f0eb]" style={{ fontFamily: "'Montserrat', sans-serif" }}>

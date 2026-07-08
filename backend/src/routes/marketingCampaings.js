@@ -1,7 +1,11 @@
 import express from "express"
 import marketingCampaingsController from "../controllers/marketingCampaingsController.js";
+import adminAuth from "../middlewares/adminAuth.js";
 
 const router = express.Router();
+
+// All marketing campaign endpoints are admin-only management tools
+router.use(adminAuth);
 
 //(api/marketingCampaings/)
 router.route("/")

@@ -1,10 +1,11 @@
 const administratorController = {};
 
-import AdmininistratorModel from "../models/administrators.js";
+import bcrypt from "bcryptjs";
+import administratorModel from "../models/administrators.js";
 
 administratorController.getAdministrators = async (req, res) => {
   try {
-    const administrators = await administratorModel.find();
+    const administrators = await administratorModel.find().select("-password");
     return res.status(200).json(administrators);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -39,12 +40,15 @@ administratorController.updateAdministrator = async (req, res) => {
         .status(400)
         .json({ message: "Password must be at least 6 characters" });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const updatedAdministrator = await administratorModel.findByIdAndUpdate(
       req.params.id,
       {
         name,
         email,
-        password,
+        password: hashedPassword,
         phone,
         address,
       }, //new: true, es una opción que se utiliza para indicar qsdue se desea obtener el documento actualizado después de realizar la actualización. Si se establece en true, el método findByIdAndUpdate devolverá el documento actualizado en lugar del documento original antes de la actualización.

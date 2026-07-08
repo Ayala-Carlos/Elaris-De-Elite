@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { saveAdminSession } from "../utils/adminSession.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
 
@@ -35,10 +36,11 @@ export default function Login() {
     }
     setLoading(true);
     try {
-      await apiRequest("/loginAdmin", {
+      const data = await apiRequest("/loginAdmin", {
         method: "POST",
         body: { email: form.correo, password: form.contrasena },
       });
+      saveAdminSession(data.admin || { email: form.correo });
       navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Error al iniciar sesión.");
@@ -114,16 +116,6 @@ export default function Login() {
         >
           {loading ? "Iniciando sesión..." : "Iniciar sesión"}
         </button>
-
-        <p
-          className="text-center text-sm text-[#7a6a6a] mt-5"
-          style={{ fontFamily: "'Montserrat', sans-serif" }}
-        >
-          ¿No tienes cuenta?{" "}
-          <Link to="/register" className="text-[#c0392b] font-semibold hover:underline">
-            Crear cuenta
-          </Link>
-        </p>
       </div>
     </div>
   );

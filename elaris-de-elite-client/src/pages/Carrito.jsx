@@ -3,22 +3,9 @@ import Navbar from "../components/BarraNavegacion.jsx";
 import Footer from "../components/Footer.jsx";
 import Boton from "../components/Boton.jsx";
 import { Trash2, Plus, Minus, ArrowLeft, CheckCircle, RefreshCcw, Shield, X, CreditCard, Lock, User, MapPin } from "lucide-react";
-import LabialDior from "../img/LabialDior.png";
-import SetBrochas from "../img/SetBrochas.png";
 import { Link } from "react-router-dom";
-
-const C = {
-  rojo: "#DE4B52",
-  dorado: "#D4A574",
-  marron: "#6B5B4E",
-  fondo: "#FAF8F5",
-  crema: "#F2E7E1",
-};
-
-const initialProductos = [
-  { id: 1, categoria: "ACCESORIOS", nombre: "Set de brochas", precio: 150, cantidad: 1, img: SetBrochas },
-  { id: 2, categoria: "LABIALES", nombre: "Dior Addict barra de labios brillante hidratante", precio: 52, cantidad: 1, img: LabialDior },
-];
+import Swal from "sweetalert2";
+import { useCart } from "../hooks/useCart.js";
 
 /* ── Campo de formulario reutilizable ── */
 const Field = ({ label, placeholder, type = "text", value, onChange, icon, maxLength, error }) => (
@@ -40,7 +27,7 @@ const Field = ({ label, placeholder, type = "text", value, onChange, icon, maxLe
 );
 
 /* ── Modal Formulario de Pago ── */
-const ModalPago = ({ onClose, onSuccess }) => {
+const ModalPago = ({ onClose, onSuccess, total }) => {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     nombre: "", email: "", telefono: "",
@@ -48,6 +35,8 @@ const ModalPago = ({ onClose, onSuccess }) => {
     titular: "", numero: "", expiry: "", cvv: "",
   });
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
@@ -59,11 +48,16 @@ const ModalPago = ({ onClose, onSuccess }) => {
     return d.length >= 3 ? d.slice(0, 2) + "/" + d.slice(2) : d;
   };
 
+  const validarEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validarTelefono = (telefono) => /^[0-9+\-\s]{7,15}$/.test(telefono);
+
   const validateStep1 = () => {
     const e = {};
     if (!form.nombre.trim()) e.nombre = "Campo requerido";
-    if (!form.email.includes("@")) e.email = "Correo inválido";
+    if (!form.email.trim()) e.email = "Campo requerido";
+    else if (!validarEmail(form.email.trim())) e.email = "Correo inválido";
     if (!form.telefono.trim()) e.telefono = "Campo requerido";
+    else if (!validarTelefono(form.telefono.trim())) e.telefono = "Teléfono inválido";
     if (!form.direccion.trim()) e.direccion = "Campo requerido";
     if (!form.ciudad.trim()) e.ciudad = "Campo requerido";
     if (!form.pais.trim()) e.pais = "Campo requerido";
@@ -73,16 +67,51 @@ const ModalPago = ({ onClose, onSuccess }) => {
 
   const validateStep2 = () => {
     const e = {};
+    const numeroLimpio = form.numero.replace(/\s/g, "");
+
     if (!form.titular.trim()) e.titular = "Campo requerido";
-    if (form.numero.replace(/\s/g, "").length < 16) e.numero = "Número de tarjeta inválido";
-    if (form.expiry.length < 5) e.expiry = "Fecha inválida";
-    if (form.cvv.length < 3) e.cvv = "CVV inválido";
+
+    if (numeroLimpio.length < 16 || numeroLimpio.length > 19 || !/^\d+$/.test(numeroLimpio)) {
+      e.numero = "Número de tarjeta inválido";
+    }
+
+    const expiryMatch = /^(\d{2})\/(\d{2})$/.exec(form.expiry);
+    if (!expiryMatch) {
+      e.expiry = "Fecha inválida";
+    } else {
+      const month = Number(expiryMatch[1]);
+      const year = Number(expiryMatch[2]) + 2000;
+      const now = new Date();
+      const expiryDate = new Date(year, month, 0, 23, 59, 59);
+      if (month < 1 || month > 12) e.expiry = "Mes inválido";
+      else if (expiryDate < now) e.expiry = "Tarjeta vencida";
+    }
+
+    if (!/^\d{3,4}$/.test(form.cvv)) e.cvv = "CVV inválido";
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   const handleNext = () => { if (validateStep1()) { setErrors({}); setStep(2); } };
-  const handleSubmit = () => { if (validateStep2()) onSuccess(); };
+
+  const handleSubmit = async () => {
+    if (!validateStep2()) return;
+    setSubmitError("");
+    setSubmitting(true);
+    try {
+      await onSuccess({
+        country: form.pais,
+        state: form.ciudad,
+        city: form.ciudad,
+        detailedAddress: form.direccion,
+      });
+    } catch (err) {
+      setSubmitError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 py-6 overflow-y-auto">
@@ -133,7 +162,7 @@ const ModalPago = ({ onClose, onSuccess }) => {
               {/* Mini resumen */}
               <div className="bg-[#FAF8F5] rounded-xl px-4 py-3 flex justify-between items-center border border-[#E8D5CA]">
                 <span className="text-sm text-[#6B5B4E]">Total a pagar</span>
-                <span className="font-bold text-[#6B5B4E] text-lg">$272.60</span>
+                <span className="font-bold text-[#6B5B4E] text-lg">${total.toFixed(2)}</span>
               </div>
 
               <Field label="Nombre del titular" placeholder="Como aparece en la tarjeta" value={form.titular} onChange={set("titular")} icon={<User size={14} />} error={errors.titular} />
@@ -160,6 +189,8 @@ const ModalPago = ({ onClose, onSuccess }) => {
                 <Lock size={12} className="text-[#D4A574]" />
                 Tus datos están protegidos con cifrado SSL
               </div>
+
+              {submitError && <p className="text-xs text-[#DE4B52]">{submitError}</p>}
             </>
           )}
         </div>
@@ -176,9 +207,10 @@ const ModalPago = ({ onClose, onSuccess }) => {
           )}
           <button
             onClick={step === 1 ? handleNext : handleSubmit}
-            className="flex-1 py-3 rounded-full bg-[#D4A574] hover:bg-[#c49060] text-white text-sm font-semibold transition shadow-md"
+            disabled={submitting}
+            className="flex-1 py-3 rounded-full bg-[#D4A574] hover:bg-[#c49060] disabled:opacity-50 text-white text-sm font-semibold transition shadow-md"
           >
-            {step === 1 ? "Continuar →" : "Confirmar pago"}
+            {step === 1 ? "Continuar →" : submitting ? "Procesando..." : "Confirmar pago"}
           </button>
         </div>
       </div>
@@ -187,7 +219,7 @@ const ModalPago = ({ onClose, onSuccess }) => {
 };
 
 /* ── Modal Confirmación ── */
-const ModalConfirmacion = ({ onClose }) => (
+const ModalConfirmacion = ({ onClose, resumen }) => (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
     <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-10 text-center">
       <div className="w-16 h-16 rounded-full bg-[#F2E7E1] flex items-center justify-center mx-auto mb-5">
@@ -201,13 +233,13 @@ const ModalConfirmacion = ({ onClose }) => (
 
       <div className="bg-[#FAF8F5] rounded-xl px-5 py-4 text-left space-y-1 mb-8 border border-[#E8D5CA]">
         <div className="flex justify-between text-xs text-[#6B5B4E]">
-          <span>Productos</span><span>2 artículos</span>
+          <span>Productos</span><span>{resumen.itemCount} artículos</span>
         </div>
         <div className="flex justify-between text-xs text-[#6B5B4E]">
           <span>Envío</span><span>Gratis</span>
         </div>
         <div className="flex justify-between text-sm font-bold text-[#6B5B4E] pt-1 border-t border-[#E8D5CA] mt-1">
-          <span>Total pagado</span><span>$272.60</span>
+          <span>Total pagado</span><span>${resumen.totalAmount.toFixed(2)}</span>
         </div>
       </div>
 
@@ -223,59 +255,61 @@ const ModalConfirmacion = ({ onClose }) => (
 
 /* ── Carrito principal ── */
 const Carrito = () => {
+  const cart = useCart();
+  const { items, subtotal, totalAmount, discountValue, discountCode } = cart;
+
   const [modalPago, setModalPago] = useState(false);
   const [modalConfirm, setModalConfirm] = useState(false);
-  const [productosState, setProductosState] = useState(initialProductos);
+  const [ultimoResumen, setUltimoResumen] = useState(null);
   const [codigo, setCodigo] = useState("");
-  const [codigoAplicado, setCodigoAplicado] = useState(null);
   const [codigoError, setCodigoError] = useState("");
 
-  const handleSuccess = () => {
-    setModalPago(false);
-    setModalConfirm(true);
-  };
-
-  const handleIncrement = (id) => {
-    setProductosState((prev) => prev.map(p => p.id === id ? { ...p, cantidad: p.cantidad + 1 } : p));
-  };
-
-  const handleDecrement = (id) => {
-    setProductosState((prev) => prev.map(p => p.id === id ? { ...p, cantidad: Math.max(1, p.cantidad - 1) } : p));
-  };
-
-  const handleRemove = (id) => {
-    setProductosState((prev) => prev.filter(p => p.id !== id));
-  };
-
+  const handleIncrement = (productId, quantity) => cart.updateItemQty(productId, quantity + 1);
+  const handleDecrement = (productId, quantity) => quantity > 1 && cart.updateItemQty(productId, quantity - 1);
+  const handleRemove = (productId) => cart.removeItem(productId);
   const handleClear = () => {
-    setProductosState([]);
-    setCodigoAplicado(null);
-    setCodigo("");
-    setCodigoError("");
+    Swal.fire({
+      title: "¿Vaciar el carrito?",
+      text: "Se eliminarán todos los productos del carrito.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DE4B52",
+      cancelButtonColor: "#6B5B4E",
+      confirmButtonText: "Sí, vaciar",
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        cart.clearCart();
+        setCodigo("");
+        setCodigoError("");
+      }
+    });
   };
 
-  // totals
-  const subtotal = productosState.reduce((s, p) => s + p.precio * p.cantidad, 0);
-  const iva = +(subtotal * 0.16).toFixed(2);
-  const descuento = codigoAplicado ? +(subtotal * 0.2).toFixed(2) : 0;
-  const total = +(subtotal - descuento + iva).toFixed(2);
-
-  const validCodes = ["DESCUENTO20", "AHORRA20"];
-
-  const applyCodigo = () => {
+  const applyCodigo = async () => {
     setCodigoError("");
     if (!codigo.trim()) {
       setCodigoError("Introduce un código de descuento");
       return;
     }
-    if (!validCodes.includes(codigo.trim().toUpperCase())) {
-      setCodigoError("Código inválido");
-      setCodigoAplicado(null);
-      return;
+    try {
+      await cart.applyDiscountCode(codigo.trim());
+    } catch (err) {
+      setCodigoError(err.message);
     }
-    setCodigoAplicado(codigo.trim().toUpperCase());
-    setCodigoError("");
   };
+
+  const handlePagoExitoso = async (address) => {
+    const resumen = await cart.checkout(address);
+    setUltimoResumen({
+      itemCount: resumen.products.reduce((s, p) => s + p.quantity, 0),
+      totalAmount: resumen.totalAmount,
+    });
+    setModalPago(false);
+    setModalConfirm(true);
+  };
+
+  const itemCount = items.reduce((s, p) => s + p.quantity, 0);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
@@ -293,7 +327,7 @@ const Carrito = () => {
           <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[#6B5B4E]">Carrito de compras</h1>
-            <p className="text-xs text-gray-400">{productosState.length} artículos en el carrito</p>
+            <p className="text-xs text-gray-400">{itemCount} artículos en el carrito</p>
           </div>
           <button
             onClick={handleClear}
@@ -304,31 +338,38 @@ const Carrito = () => {
           </button>
         </div>
 
-        {/* GRID */}
+        {items.length === 0 ? (
+          <div className="bg-white rounded-xl p-10 text-center border border-[#E8D5CA]">
+            <p className="text-sm text-gray-400 mb-4">Tu carrito está vacío.</p>
+            <Boton tipo="primario"><Link to="/productos">Ver productos</Link></Boton>
+          </div>
+        ) : (
         <div className="grid md:grid-cols-3 gap-8">
 
           {/* Lista productos */}
           <div className="md:col-span-2 space-y-6">
-            {productosState.map((p) => (
-              <div key={p.id} className="flex gap-4 bg-white p-4 rounded-xl shadow-sm border border-[#E8D5CA]">
-                <img src={p.img} alt={p.nombre} className="w-28 h-24 object-cover rounded-lg" />
-                <div className="flex-1">
-                  <p className="text-xs text-[#D4A574] font-semibold mb-1">{p.categoria}</p>
-                  <h3 className="text-sm font-semibold text-[#6B5B4E] mb-3">{p.nombre}</h3>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => handleDecrement(p.id)} className="w-8 h-8 rounded-full border border-[#E8D5CA] flex items-center justify-center"><Minus size={14} /></button>
-                      <span className="text-sm font-semibold text-[#6B5B4E]">{p.cantidad}</span>
-                      <button onClick={() => handleIncrement(p.id)} className="w-8 h-8 rounded-full border border-[#E8D5CA] flex items-center justify-center"><Plus size={14} /></button>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <p className="font-semibold text-[#6B5B4E]">${(p.precio * p.cantidad).toFixed(2)}</p>
-                      <Trash2 onClick={() => handleRemove(p.id)} size={16} className="text-[#DE4B52] cursor-pointer" />
+            {items.map((item) => {
+              const p = item.productId || {};
+              return (
+                <div key={p._id} className="flex gap-4 bg-white p-4 rounded-xl shadow-sm border border-[#E8D5CA]">
+                  <img src={p.images?.[0]?.image} alt={p.name} className="w-28 h-24 object-cover rounded-lg" />
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-[#6B5B4E] mb-3">{p.name}</h3>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => handleDecrement(p._id, item.quantity)} className="w-8 h-8 rounded-full border border-[#E8D5CA] flex items-center justify-center"><Minus size={14} /></button>
+                        <span className="text-sm font-semibold text-[#6B5B4E]">{item.quantity}</span>
+                        <button onClick={() => handleIncrement(p._id, item.quantity)} className="w-8 h-8 rounded-full border border-[#E8D5CA] flex items-center justify-center"><Plus size={14} /></button>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <p className="font-semibold text-[#6B5B4E]">${(item.subtotal ?? p.price * item.quantity).toFixed(2)}</p>
+                        <Trash2 onClick={() => handleRemove(p._id)} size={16} className="text-[#DE4B52] cursor-pointer" />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Resumen */}
@@ -337,11 +378,10 @@ const Carrito = () => {
             <div className="space-y-2 text-sm mb-4">
               <div className="flex justify-between text-[#6B5B4E]"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
               <div className="flex justify-between text-[#6B5B4E]"><span>Envío</span><span>Gratis</span></div>
-              {codigoAplicado && (
-                <div className="flex justify-between text-[#6B5B4E]"><span>Descuento ({codigoAplicado})</span><span>-${descuento.toFixed(2)}</span></div>
+              {discountValue > 0 && (
+                <div className="flex justify-between text-[#6B5B4E]"><span>Descuento {discountCode ? `(${discountCode})` : ""}</span><span>-${discountValue.toFixed(2)}</span></div>
               )}
-              <div className="flex justify-between text-[#6B5B4E] border-b pb-2"><span>IVA (16%)</span><span>${iva.toFixed(2)}</span></div>
-              <div className="flex justify-between font-bold text-[#6B5B4E] pt-2"><span>Total</span><span>${total.toFixed(2)}</span></div>
+              <div className="flex justify-between font-bold text-[#6B5B4E] pt-2 border-t"><span>Total</span><span>${totalAmount.toFixed(2)}</span></div>
             </div>
 
             <div className="flex gap-2 mb-2">
@@ -349,7 +389,7 @@ const Carrito = () => {
               <Boton tipo="secundario" onClick={applyCodigo} className="px-4 py-2 text-sm text-black-500">Aplicar</Boton>
             </div>
             {codigoError && <p className="text-[12px] text-[#DE4B52] mb-2">{codigoError}</p>}
-            {codigoAplicado && <p className="text-[12px] text-green-600 mb-2">Código {codigoAplicado} aplicado — 20% de descuento</p>}
+            {discountCode && discountValue > 0 && <p className="text-[12px] text-green-600 mb-2">Código {discountCode} aplicado</p>}
 
             {/* Botón que abre modal */}
             <button
@@ -386,13 +426,14 @@ const Carrito = () => {
           </div>
 
         </div>
+        )}
       </main>
 
       <Footer />
 
       {/* Modales */}
-      {modalPago && <ModalPago onClose={() => setModalPago(false)} onSuccess={handleSuccess} />}
-      {modalConfirm && <ModalConfirmacion onClose={() => setModalConfirm(false)} />}
+      {modalPago && <ModalPago onClose={() => setModalPago(false)} onSuccess={handlePagoExitoso} total={totalAmount} />}
+      {modalConfirm && ultimoResumen && <ModalConfirmacion onClose={() => setModalConfirm(false)} resumen={ultimoResumen} />}
     </div>
   );
 };

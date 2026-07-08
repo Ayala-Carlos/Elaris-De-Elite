@@ -83,7 +83,7 @@ export default function CampanasMarketing() {
 
   const campanasFiltradas = campanasList.filter((campana) => {
     const nombre = campana.campaignName || "";
-    const estado = campana.isActive !== false ? "Activa" : "Inactiva";
+    const estado = campana.status === "active" ? "Activa" : "Inactiva";
     const coincideTexto = nombre
       .toLowerCase()
       .includes(textoBusqueda.toLowerCase());
@@ -95,7 +95,7 @@ export default function CampanasMarketing() {
     return coincideTexto && coincideEstado;
   });
 
-  const activas = campanasList.filter((c) => c.isActive !== false).length;
+  const activas = campanasList.filter((c) => c.status === "active").length;
   const inactivas = campanasList.length - activas;
 
   return (

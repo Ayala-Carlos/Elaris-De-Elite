@@ -30,9 +30,39 @@ ordersController.getOrderById = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
+    // A customer may only look up their own orders
+    if (order.cartId?.customerId?._id?.toString() !== req.customer.id) {
+      return res.status(403).json({ message: "No autorizado" });
+    }
+
     return res.status(200).json(order);
   } catch (error) {
     console.error("Error obtaining the order:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Get the order history of a given customer
+ordersController.getOrdersByCustomer = async (req, res) => {
+  try {
+    const { customerId } = req.params;
+
+    // A customer may only look up their own order history
+    if (customerId !== req.customer.id) {
+      return res.status(403).json({ message: "No autorizado" });
+    }
+
+    const customerCarts = await cartModel.find({ customerId }).select("_id");
+    const cartIds = customerCarts.map((c) => c._id);
+
+    const orders = await ordersModel
+      .find({ cartId: { $in: cartIds } })
+      .sort({ orderDate: -1 })
+      .populate({ path: "cartId", populate: { path: "products.productId", select: "name price images" } });
+
+    return res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error obtaining the customer's orders:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -50,6 +80,11 @@ ordersController.createOrder = async (req, res) => {
     const cart = await cartModel.findById(cartId);
     if (!cart) {
       return res.status(404).json({ message: `Cart with ID ${cartId} not found` });
+    }
+
+    // A customer may only check out their own cart
+    if (cart.customerId?.toString() !== req.customer.id) {
+      return res.status(403).json({ message: "No autorizado" });
     }
 
     // Basic address validation: must be an array with at least one address object

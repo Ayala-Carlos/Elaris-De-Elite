@@ -3,32 +3,15 @@ import Navbar from "../components/BarraNavegacion.jsx";
 import Footer from "../components/Footer.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
 import Encabezado from "../components/Encabezado.jsx";
-
-// Imágenes
-import BasePremiun from "../img/BasePremiunPinkFly.png";
-import HandBag from "../img/PaletaSombrasHandBag.png";
-import FraganciaElite from "../img/PerfumeSignature.png";
-import RuborIluminador from "../img/RuborCompacto.png";
-import MascaraPestanas from "../img/MascaraPestañas.png";
-import CookieHighlight from "../img/Highliters.png";
-
-const productos = [
-  { id: 1, categoria: "LABIALES", nombre: "Base premium pink fly", precio: 85, img: BasePremiun },
-  { id: 2, categoria: "OJOS", nombre: "Paleta Handbag", precio: 50, img: HandBag },
-  { id: 3, categoria: "FRAGANCIAS", nombre: "Perfume Signature Elite", precio: 180, img: FraganciaElite },
-  { id: 4, categoria: "ROSTRO", nombre: "Rubor iluminador", precio: 75, img: RuborIluminador },
-  { id: 5, categoria: "OJOS", nombre: "Máscara volumen", precio: 68, img: MascaraPestanas },
-  { id: 6, categoria: "ROSTRO", nombre: "Cookie Highlight", precio: 39, img: CookieHighlight },
-];
-
-const categorias = ["TODOS", "LABIALES", "OJOS", "ROSTRO", "ACCESORIOS", "FRAGANCIAS"];
+import { useProducts } from "../hooks/useProducts.js";
 
 const Productos = () => {
+  const { products, categories, loading, error } = useProducts();
   const [categoriaActiva, setCategoriaActiva] = useState("TODOS");
   const [precioActivo, setPrecioActivo] = useState("TODOS");
 
   // FILTRO COMBINADO
-  const productosFiltrados = productos.filter((p) => {
+  const productosFiltrados = products.filter((p) => {
     const cumpleCategoria =
       categoriaActiva === "TODOS" || p.categoria === categoriaActiva;
 
@@ -61,7 +44,7 @@ const Productos = () => {
               <div className="min-w-[150px]">
                 <h3 className="font-bold text-[#6B5B4E] mb-3">Categorías</h3>
                 <ul className="space-y-2 text-sm">
-                  {categorias.map((cat) => (
+                  {categories.map((cat) => (
                     <li key={cat}>
                       <button
                         onClick={() => setCategoriaActiva(cat)}
@@ -128,15 +111,22 @@ const Productos = () => {
 
           {/* PRODUCTOS */}
           <section className="lg:col-span-3">
-            <p className="text-xs text-gray-400 mb-4">
-              {productosFiltrados.length} productos encontrados
-            </p>
+            {loading && <p className="text-sm text-gray-400 mb-4">Cargando productos...</p>}
+            {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {productosFiltrados.map((p) => (
-                <TarjetaProducto key={p.id} producto={p} />
-              ))}
-            </div>
+            {!loading && !error && (
+              <>
+                <p className="text-xs text-gray-400 mb-4">
+                  {productosFiltrados.length} productos encontrados
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {productosFiltrados.map((p) => (
+                    <TarjetaProducto key={p.id} producto={p} />
+                  ))}
+                </div>
+              </>
+            )}
           </section>
 
         </div>

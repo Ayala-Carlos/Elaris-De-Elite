@@ -9,6 +9,10 @@ const reviewsSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "customers"
     },
+    idProduct:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "products"
+    },
     rating:{
         type: Number,
         min: 1,

@@ -27,20 +27,6 @@ async function apiRequest(path, options = {}) {
   return data;
 }
  
-async function resolveIdByName(path, name) {
-  const records = await apiRequest(path);
-  const normalizedName = String(name ?? "").trim().toLowerCase();
-  const match = Array.isArray(records)
-    ? records.find(
-        (item) =>
-          String(item.name ?? item.nombre ?? "")
-            .trim()
-            .toLowerCase() === normalizedName
-      )
-    : null;
-  return match?._id ?? null;
-}
- 
 const initialForm = {
   nombre: "",
   categoria: "",
@@ -66,27 +52,46 @@ export default function AgregarProducto() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
- 
+  const [categorias, setCategorias] = useState([]);
+  const [marcas, setMarcas] = useState([]);
+
+  useEffect(() => {
+    const cargarOpciones = async () => {
+      try {
+        const [categoriasData, marcasData] = await Promise.all([
+          apiRequest("/categories"),
+          apiRequest("/brands"),
+        ]);
+        setCategorias(Array.isArray(categoriasData) ? categoriasData : []);
+        setMarcas(Array.isArray(marcasData) ? marcasData : []);
+      } catch {
+        setApiError("No se pudieron cargar las categorías y marcas.");
+      }
+    };
+
+    cargarOpciones();
+  }, []);
+
   useEffect(() => {
     if (isEdit) {
       const cargarProductoAEditar = async () => {
         try {
           setLoading(true);
           const prod = await apiRequest(`/products/${id}`);
-         
-          // Poblamos el formulario mapeando los nombres desde los objetos populados del backend
+
+          // Poblamos el formulario con los ids de categoría/marca para que el combobox los seleccione
           setForm({
             nombre: prod.name || "",
-            categoria: prod.idCategory?.name || "",
+            categoria: prod.idCategory?._id || "",
             precio: prod.price != null ? String(prod.price) : "",
-            marca: prod.idBrand?.name || "",
+            marca: prod.idBrand?._id || "",
             cantidad: prod.stock != null ? String(prod.stock) : "",
             size: prod.size || "",
             color: prod.color || "",
-            descripcion: prod.description || "",  
+            descripcion: prod.description || "",
             imagen: null,
           });
- 
+
           if (prod.images?.[0]?.image) {
             setPreview(prod.images[0].image);
           }
@@ -97,13 +102,13 @@ export default function AgregarProducto() {
               )
             );
           }
-        } catch (err) {
+        } catch {
           setApiError("No se pudieron cargar los datos del producto.");
         } finally {
           setLoading(false);
         }
       };
- 
+
       cargarProductoAEditar();
     }
   }, [id, isEdit]);
@@ -136,9 +141,9 @@ export default function AgregarProducto() {
   const validate = () => {
     const newErrors = {};
     if (!form.nombre.trim()) newErrors.nombre = "El nombre es requerido";
-    if (!form.categoria.trim()) newErrors.categoria = "La categoría es requerida";
+    if (!form.categoria) newErrors.categoria = "La categoría es requerida";
     if (!form.precio.trim()) newErrors.precio = "El precio es requerido";
-    if (!form.marca.trim()) newErrors.marca = "La marca es requerida";
+    if (!form.marca) newErrors.marca = "La marca es requerida";
     if (!form.cantidad.trim()) newErrors.cantidad = "La cantidad es requerida";
     if (!form.size.trim()) newErrors.size = "El tamaño es requerido";
     if (!form.color.trim()) newErrors.color = "El color es requerido";
@@ -158,16 +163,10 @@ export default function AgregarProducto() {
     setApiError("");
  
     try {
-      const categoryId = await resolveIdByName("/categories", form.categoria);
-      const brandId = await resolveIdByName("/brands", form.marca);
- 
-      if (!categoryId) throw new Error(`No se encontró la categoría "${form.categoria}". Verifica que exista.`);
-      if (!brandId) throw new Error(`No se encontró la marca "${form.marca}". Verifica que exista.`);
- 
       const formData = new FormData();
       formData.append("name", form.nombre.trim());
-      formData.append("idCategory", categoryId);
-      formData.append("idBrand", brandId);
+      formData.append("idCategory", form.categoria);
+      formData.append("idBrand", form.marca);
       formData.append("price", form.precio);
       formData.append("stock", form.cantidad);
       formData.append("size", form.size.trim());
@@ -253,24 +252,38 @@ export default function AgregarProducto() {
  
                 {/* Categoría + Precio */}
                 <div className="grid grid-cols-2 gap-4">
-                  {[
-                    ["categoria", "Categoría del producto", "Ej: Rostro"],
-                    ["precio", "Precio del producto", "Ej: 75.00"],
-                  ].map(([name, label, ph]) => (
-                    <div key={name} className="flex flex-col gap-1.5">
-                      <label className="text-sm font-semibold text-[#5a4a4a]">
-                        {label} <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="text" name={name} value={form[name]}
-                        onChange={handleChange} placeholder={ph}
-                        className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${
-                          errors[name] ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
-                        }`}
-                      />
-                      {errors[name] && <span className="text-xs text-red-400">{errors[name]}</span>}
-                    </div>
-                  ))}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-semibold text-[#5a4a4a]">
+                      Categoría del producto <span className="text-red-400">*</span>
+                    </label>
+                    <select
+                      name="categoria" value={form.categoria}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all ${
+                        errors.categoria ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
+                      }`}
+                    >
+                      <option value="">Selecciona una categoría</option>
+                      {categorias.map((cat) => (
+                        <option key={cat._id} value={cat._id}>{cat.name}</option>
+                      ))}
+                    </select>
+                    {errors.categoria && <span className="text-xs text-red-400">{errors.categoria}</span>}
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-semibold text-[#5a4a4a]">
+                      Precio del producto <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text" name="precio" value={form.precio}
+                      onChange={handleChange} placeholder="Ej: 75.00"
+                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${
+                        errors.precio ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
+                      }`}
+                    />
+                    {errors.precio && <span className="text-xs text-red-400">{errors.precio}</span>}
+                  </div>
                 </div>
  
                 {/* Tamaño + Color */}
@@ -297,26 +310,40 @@ export default function AgregarProducto() {
  
                 {/* Marca + Cantidad */}
                 <div className="grid grid-cols-2 gap-4">
-                  {[
-                    ["marca", "Marca", "Ej: L'Oréal"],
-                    ["cantidad", "Cantidad", "Ej: 50"],
-                  ].map(([name, label, ph]) => (
-                    <div key={name} className="flex flex-col gap-1.5">
-                      <label className="text-sm font-semibold text-[#5a4a4a]">
-                        {label} <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type={name === "cantidad" ? "number" : "text"}
-                        name={name} value={form[name]}
-                        onChange={handleChange} placeholder={ph}
-                        min={name === "cantidad" ? "0" : undefined}
-                        className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${
-                          errors[name] ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
-                        }`}
-                      />
-                      {errors[name] && <span className="text-xs text-red-400">{errors[name]}</span>}
-                    </div>
-                  ))}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-semibold text-[#5a4a4a]">
+                      Marca <span className="text-red-400">*</span>
+                    </label>
+                    <select
+                      name="marca" value={form.marca}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all ${
+                        errors.marca ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
+                      }`}
+                    >
+                      <option value="">Selecciona una marca</option>
+                      {marcas.map((marca) => (
+                        <option key={marca._id} value={marca._id}>{marca.name}</option>
+                      ))}
+                    </select>
+                    {errors.marca && <span className="text-xs text-red-400">{errors.marca}</span>}
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-semibold text-[#5a4a4a]">
+                      Cantidad <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="cantidad" value={form.cantidad}
+                      onChange={handleChange} placeholder="Ej: 50"
+                      min="0"
+                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-[#3b2a2a] outline-none transition-all placeholder:text-[#bbb] ${
+                        errors.cantidad ? "border-red-300 bg-red-50" : "border-[#e0d8d0] bg-[#faf8f6] focus:border-[#c8a87a] focus:bg-white"
+                      }`}
+                    />
+                    {errors.cantidad && <span className="text-xs text-red-400">{errors.cantidad}</span>}
+                  </div>
                 </div>
  
                 {/* Descripción */}

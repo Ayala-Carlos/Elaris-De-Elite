@@ -1,15 +1,21 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logoImg from "../img/elaris-logo.png";
+import { clearAdminSession } from "../utils/adminSession.js";
+
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
 
 export default function BarraNavegacion() {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // limpiar localStorage o tokens
-    console.log("Sesión cerrada");
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_URL}/logout`, { method: "POST", credentials: "include" });
+    } finally {
+      clearAdminSession();
+      navigate("/login");
+    }
   };
 
   return (

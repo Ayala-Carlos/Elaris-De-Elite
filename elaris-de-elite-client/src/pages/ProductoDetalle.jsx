@@ -1,95 +1,14 @@
 import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/BarraNavegacion.jsx";
 import Footer from "../components/Footer.jsx";
 import Boton from "../components/Boton.jsx";
 import { Star, Truck, ShieldCheck, RotateCcw, Zap, Minus, Plus, X } from "lucide-react";
-import BasePremiun from "../img/BasePremiunPinkFly.png";
-import HandBag from "../img/PaletaSombrasHandBag.png";
-import FraganciaElite from "../img/PerfumeSignature.png";
-import RuborIluminador from "../img/RuborCompacto.png";
-import MascaraPestanas from "../img/MascaraPestañas.png";
-import CookieHighlight from "../img/Highliters.png";
-
-const productos = [
-  {
-    id: "1",
-    nombre: "Base premiun pink fly",
-    categoria: "LABIALES",
-    precio: 85,
-    descripcion: "Base de maquillaje de alta cobertura con acabado mate y larga duración.",
-    imagen: BasePremiun,
-    rating: 5,
-    reviews: 432,
-  },
-  {
-    id: "2",
-    categoria: "OJOS",
-    nombre: "Rabanne Paleta de sombras Handbag",
-    precio: 50,
-    imagen: HandBag,
-    descripcion: "Paleta de sombras de alta calidad con una amplia gama de colores.",
-    rating: 4,
-    reviews: 210,
-  },
-  {
-    id: "3",
-    categoria: "FRAGANCIAS",
-    nombre: "Perfume Signature Elite",
-    precio: 180,
-    imagen: FraganciaElite,
-    descripcion: "Fragancia elegante y sofisticada con notas florales y amaderadas.",
-    rating: 5,
-    reviews: 320,
-  },
-  {
-    id: "4",
-    categoria: "ROSTRO",
-    nombre: "Rubor compacto iluminador",
-    precio: 75,
-    imagen: RuborIluminador,
-    descripcion: "Rubor compacto con partículas iluminadoras para un brillo natural.",
-    rating: 4,
-    reviews: 150,
-  },
-  {
-    id: "5",
-    categoria: "OJOS",
-    nombre: "Máscara de pestañas volumen",
-    precio: 68,
-    imagen: MascaraPestanas,
-    descripcion: "Máscara de pestañas que proporciona volumen extremo y definición.",
-    rating: 5,
-    reviews: 500,
-  },
-  {
-    id: "6",
-    categoria: "ROSTRO",
-    nombre: "Cookie Highlight",
-    precio: 39,
-    imagen: CookieHighlight,
-    descripcion: "Iluminador en polvo con un acabado radiante y duradero.",
-    rating: 4,
-    reviews: 180,
-  },
-];
-
-const reseñasIniciales = [
-  {
-    id: 1,
-    nombre: "Maria Reyes",
-    fecha: "23-03-2026",
-    rating: 4,
-    comentario: "Excelente fragancia, muy duradera y elegante. Perfecta para ocasiones especiales.",
-  },
-  {
-    id: 2,
-    nombre: "Francisca Ayala",
-    fecha: "3-03-2026",
-    rating: 4,
-    comentario: "Excelente fragancia, muy duradera y elegante. Perfecta para ocasiones especiales.",
-  },
-];
+import { useProduct } from "../hooks/useProduct.js";
+import { useProductReviews } from "../hooks/useProductReviews.js";
+import { useAuth } from "../hooks/useAuth.js";
+import { useCart } from "../hooks/useCart.js";
+import { useOrderHistory } from "../hooks/useOrderHistory.js";
 
 const StarRating = ({ rating, onSelect, interactive = false }) => {
   const [hovered, setHovered] = useState(0);
@@ -111,36 +30,111 @@ const StarRating = ({ rating, onSelect, interactive = false }) => {
   );
 };
 
+const formatFecha = (isoDate) => {
+  if (!isoDate) return "";
+  return new Date(isoDate).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
+};
+
 const ProductoDetalle = () => {
   const { id } = useParams();
-  const producto = productos.find((p) => p.id === id);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { addItem } = useCart();
+  const { product, loading, error } = useProduct(id);
+  const { reviews, submitReview } = useProductReviews(id);
+  const { orders } = useOrderHistory(user?._id);
 
-  const [reseñas, setReseñas] = useState(reseñasIniciales);
+  const haComprado = orders.some((order) =>
+    (order.cartId?.products || []).some(
+      (p) => (p.productId?._id || p.productId)?.toString() === id
+    )
+  );
+
   const [modalAbierto, setModalAbierto] = useState(false);
   const [nuevaReseña, setNuevaReseña] = useState({ rating: 0, comentario: "" });
+  const [reseñaError, setReseñaError] = useState("");
   const [cantidad, setCantidad] = useState(1);
+  const [addError, setAddError] = useState("");
+  const [addedMsg, setAddedMsg] = useState("");
 
-  if (!producto) {
-    return <div>Producto no encontrado</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
+        <Navbar />
+        <main className="flex-1 max-w-6xl mx-auto px-6 py-10 w-full">
+          <p className="text-sm text-gray-400">Cargando producto...</p>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
-  const handleEnviarReseña = () => {
-    if (!nuevaReseña.comentario.trim() || nuevaReseña.rating === 0) return;
-    const hoy = new Date();
-    const fecha = `${hoy.getDate()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-${hoy.getFullYear()}`;
-    setReseñas([
-      ...reseñas,
-      {
-        id: Date.now(),
-        nombre: "Usuario",
-        fecha,
-        rating: nuevaReseña.rating,
-        comentario: nuevaReseña.comentario,
-      },
-    ]);
-    setNuevaReseña({ rating: 0, comentario: "" });
-    setModalAbierto(false);
+  if (error || !product) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
+        <Navbar />
+        <main className="flex-1 max-w-6xl mx-auto px-6 py-10 w-full">
+          <p>Producto no encontrado</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const promedio = reviews.length
+    ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+    : 0;
+
+  const handleAgregarAlCarrito = async () => {
+    setAddError("");
+    setAddedMsg("");
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    try {
+      await addItem(product._id, cantidad);
+      setAddedMsg("Producto agregado al carrito");
+    } catch (err) {
+      setAddError(err.message);
+    }
   };
+
+  const handleEnviarReseña = async () => {
+    if (!user) {
+      setModalAbierto(false);
+      navigate("/login");
+      return;
+    }
+    if (!haComprado) {
+      setReseñaError("Solo puedes reseñar productos que hayas comprado.");
+      return;
+    }
+    if (nuevaReseña.rating === 0) {
+      setReseñaError("Selecciona una calificación");
+      return;
+    }
+    if (nuevaReseña.comentario.trim().length < 5) {
+      setReseñaError("La reseña debe tener al menos 5 caracteres");
+      return;
+    }
+
+    setReseñaError("");
+    try {
+      await submitReview({
+        idClient: user._id,
+        rating: nuevaReseña.rating,
+        comment: nuevaReseña.comentario,
+      });
+      setNuevaReseña({ rating: 0, comentario: "" });
+      setModalAbierto(false);
+    } catch (err) {
+      setReseñaError(err.message);
+    }
+  };
+
+  const categoria = product.idCategory?.name?.toUpperCase() || "SIN CATEGORÍA";
+  const imagen = product.images?.[0]?.image;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
@@ -148,7 +142,7 @@ const ProductoDetalle = () => {
       <main className="flex-1 max-w-6xl mx-auto px-6 py-10 w-full">
         {/* Breadcrumb */}
         <p className="text-xs text-gray-400 mb-4">
-          Inicio / {producto.categoria} / {producto.nombre}
+          Inicio / {categoria} / {product.name}
         </p>
         <Link to="/productos" className="text-sm text-[#D4A574] mb-6 inline-block">
           ← Volver
@@ -158,32 +152,32 @@ const ProductoDetalle = () => {
           {/* Imagen */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-[#E8D5CA]">
             <img
-              src={producto.imagen}
-              alt={producto.nombre}
+              src={imagen}
+              alt={product.name}
               className="w-full h-[400px] object-contain"
             />
           </div>
 
           {/* Info */}
           <div>
-            <p className="text-sm text-[#D4A574] font-semibold mb-2">{producto.categoria}</p>
-            <h1 className="text-2xl font-bold text-[#6B5B4E] mb-2">{producto.nombre}</h1>
+            <p className="text-sm text-[#D4A574] font-semibold mb-2">{categoria}</p>
+            <h1 className="text-2xl font-bold text-[#6B5B4E] mb-2">{product.name}</h1>
 
             {/* Rating */}
             <div className="flex items-center gap-2 mb-4">
               <div className="flex text-yellow-400">
-                {[...Array(producto.rating)].map((_, i) => (
+                {[...Array(Math.round(promedio))].map((_, i) => (
                   <Star key={i} size={16} fill="currentColor" />
                 ))}
               </div>
               <span className="text-xs text-gray-400">
-                {producto.rating}.0 | {producto.reviews} Reseñas
+                {promedio.toFixed(1)} | {reviews.length} Reseñas
               </span>
             </div>
 
             {/* Precio */}
             <p className="text-2xl font-semibold text-[#6B5B4E] mb-6">
-              ${producto.precio.toFixed(2)}
+              ${Number(product.price).toFixed(2)}
             </p>
 
             {/* Beneficios */}
@@ -203,7 +197,7 @@ const ProductoDetalle = () => {
             </div>
 
             {/* Descripción */}
-            <p className="text-sm text-gray-500 mb-6 leading-relaxed">{producto.descripcion}</p>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">{product.description}</p>
 
             {/* Cantidad */}
             <div className="flex items-center gap-4 mb-6">
@@ -222,9 +216,12 @@ const ProductoDetalle = () => {
               </button>
             </div>
 
+            {addError && <p className="text-xs text-red-500 mb-3">{addError}</p>}
+            {addedMsg && <p className="text-xs text-green-600 mb-3">{addedMsg}</p>}
+
             {/* Botón */}
-            <Boton tipo="primario" className="px-8">
-              <Link to="/carrito">Agregar al carrito</Link>
+            <Boton tipo="primario" className="px-8" onClick={handleAgregarAlCarrito}>
+              Agregar al carrito
             </Boton>
           </div>
         </div>
@@ -234,31 +231,47 @@ const ProductoDetalle = () => {
           <h2 className="text-xl font-bold text-[#6B5B4E] mb-6">Reseñas de los clientes</h2>
 
           <div className="flex flex-col gap-4 mb-8">
-            {reseñas.map((r) => (
-              <div key={r.id} className="bg-white rounded-xl p-5 shadow-sm border border-[#E8D5CA]">
+            {reviews.length === 0 && (
+              <p className="text-sm text-gray-400">Aún no hay reseñas para este producto.</p>
+            )}
+            {reviews.map((r) => (
+              <div key={r._id} className="bg-white rounded-xl p-5 shadow-sm border border-[#E8D5CA]">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="font-semibold text-[#6B5B4E]">{r.nombre}</span>
+                  <span className="font-semibold text-[#6B5B4E]">{r.idClient?.name || "Usuario"}</span>
                   <span className="text-xs bg-[#C8E6C9] text-[#388E3C] px-2 py-0.5 rounded-full">
                     Cuenta verificada
                   </span>
                 </div>
                 <div className="flex items-center gap-3 mb-3">
                   <StarRating rating={r.rating} />
-                  <span className="text-xs text-gray-400">{r.fecha}</span>
+                  <span className="text-xs text-gray-400">{formatFecha(r.reviewDate || r.createdAt)}</span>
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed">{r.comentario}</p>
+                <p className="text-sm text-gray-600 leading-relaxed">{r.comment}</p>
               </div>
             ))}
           </div>
 
           {/* Botón abrir modal */}
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center gap-2">
             <button
-              onClick={() => setModalAbierto(true)}
-              className="bg-[#C49A6C] hover:bg-[#b38a5c] text-white font-medium px-10 py-3 rounded-full transition-colors"
+              onClick={() => {
+                if (!user) {
+                  navigate("/login");
+                  return;
+                }
+                if (!haComprado) return;
+                setModalAbierto(true);
+              }}
+              disabled={user && !haComprado}
+              className="bg-[#C49A6C] hover:bg-[#b38a5c] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium px-10 py-3 rounded-full transition-colors"
             >
               Agregar reseña
             </button>
+            {user && !haComprado && (
+              <p className="text-xs text-gray-400">
+                Solo puedes reseñar productos que hayas comprado.
+              </p>
+            )}
           </div>
         </section>
       </main>
@@ -300,8 +313,10 @@ const ProductoDetalle = () => {
               onChange={(e) =>
                 setNuevaReseña((prev) => ({ ...prev, comentario: e.target.value }))
               }
-              className="w-full border border-gray-200 rounded-xl p-4 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-[#D4A574] mb-6"
+              className="w-full border border-gray-200 rounded-xl p-4 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-[#D4A574] mb-4"
             />
+
+            {reseñaError && <p className="text-xs text-red-500 mb-4 text-center">{reseñaError}</p>}
 
             {/* Botón enviar */}
             <div className="flex justify-center">

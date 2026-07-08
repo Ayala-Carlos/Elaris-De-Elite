@@ -2,9 +2,14 @@ import React, { useState } from "react";
 import { User, ShoppingBag, Menu, X } from "lucide-react";
 import logoElarisNav from "../img/LogoElarisEliteNav.png";
 import { Link } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth.js";
+import { useCart } from "../hooks/useCart.js";
 
 const BarraNavegacion = () => {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
+  const { itemCount } = useCart();
+  const perfilLink = user ? "/perfilusuario" : "/login";
 
   return (
     <nav className="w-full bg-[#FAF8F5] shadow-sm px-4 md:px-8 py-2">
@@ -28,8 +33,15 @@ const BarraNavegacion = () => {
 
         {/* Icons */}
         <div className="hidden md:flex gap-6 text-[#6B5B4E]">
-          <Link to="/perfilusuario"><User className="hover:text-[#D4A574]" /></Link>
-          <Link to="/carrito"><ShoppingBag className="hover:text-[#D4A574]" /></Link>
+          <Link to={perfilLink}><User className="hover:text-[#D4A574]" /></Link>
+          <Link to="/carrito" className="relative">
+            <ShoppingBag className="hover:text-[#D4A574]" />
+            {itemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-[#DE4B52] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                {itemCount}
+              </span>
+            )}
+          </Link>
         </div>
 
         {/* Mobile Button */}
@@ -51,8 +63,15 @@ const BarraNavegacion = () => {
           <Link to="/reseñas">Reseñas</Link>
 
           <div className="flex justify-center gap-6 pt-2">
-            <Link to="/perfilusuario"><User /></Link>
-            <Link to="/carrito"><ShoppingBag /></Link>
+            <Link to={perfilLink}><User /></Link>
+            <Link to="/carrito" className="relative">
+              <ShoppingBag />
+              {itemCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#DE4B52] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
       )}

@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
@@ -13,6 +12,9 @@ import CategoriasYMarcas from "./pages/CategoriasYMarcas";
 import AgregarCampana from "./pages/CampanasMarketingAgregar";
 import CodigosDescuento from "./pages/CodigosDescuentos";
 import AgregarDescuento from "./pages/AgregarCodigo";
+import Administradores from "./pages/Administradores";
+import AgregarAdministrador from "./pages/AgregarAdministrador";
+import RutaPrivada from "./components/RutaPrivada.jsx";
 
 export default function App() {
   return (
@@ -20,26 +22,26 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/clientes" element={<Clientes />} />
-        <Route path="/ventas" element={<Ventas />} />
-        <Route path="/reviews" element={<Reviews />} />
-        <Route path="/productos" element={<Productos />} />
-        <Route path="/pedidos" element={<Pedidos />} />
-        <Route path="/marketing" element={<CampanasMarketing />} />
-        <Route path="/marketing/agregar" element={<AgregarCampana />} />
-        <Route path="/marketing/editar/:id" element={<AgregarCampana />} />
-        <Route path="/productos/agregar" element={<AgregarProducto />} />
-        <Route path="/productos/editar/:id" element={<AgregarProducto />} />
-        <Route path="/descuentos/editar/:id" element={<AgregarDescuento />} />
+        <Route path="/dashboard" element={<RutaPrivada><Dashboard /></RutaPrivada>} />
+        <Route path="/clientes" element={<RutaPrivada><Clientes /></RutaPrivada>} />
+        <Route path="/ventas" element={<RutaPrivada><Ventas /></RutaPrivada>} />
+        <Route path="/reviews" element={<RutaPrivada><Reviews /></RutaPrivada>} />
+        <Route path="/productos" element={<RutaPrivada><Productos /></RutaPrivada>} />
+        <Route path="/pedidos" element={<RutaPrivada><Pedidos /></RutaPrivada>} />
+        <Route path="/marketing" element={<RutaPrivada><CampanasMarketing /></RutaPrivada>} />
+        <Route path="/marketing/agregar" element={<RutaPrivada><AgregarCampana /></RutaPrivada>} />
+        <Route path="/marketing/editar/:id" element={<RutaPrivada><AgregarCampana /></RutaPrivada>} />
+        <Route path="/productos/agregar" element={<RutaPrivada><AgregarProducto /></RutaPrivada>} />
+        <Route path="/productos/editar/:id" element={<RutaPrivada><AgregarProducto /></RutaPrivada>} />
+        <Route path="/descuentos/editar/:id" element={<RutaPrivada><AgregarDescuento /></RutaPrivada>} />
         <Route
           path="/productos/categoriasymarcas"
-          element={<CategoriasYMarcas />}
+          element={<RutaPrivada><CategoriasYMarcas /></RutaPrivada>}
         />
-        <Route path="/marketing/agregar" element={<AgregarCampana />} />
-        <Route path="/descuentos" element={<CodigosDescuento />} />
-        <Route path="/descuentos/agregar" element={<AgregarDescuento />} />
+        <Route path="/descuentos" element={<RutaPrivada><CodigosDescuento /></RutaPrivada>} />
+        <Route path="/descuentos/agregar" element={<RutaPrivada><AgregarDescuento /></RutaPrivada>} />
+        <Route path="/administradores" element={<RutaPrivada><Administradores /></RutaPrivada>} />
+        <Route path="/administradores/agregar" element={<RutaPrivada><AgregarAdministrador /></RutaPrivada>} />
       </Routes>
     </BrowserRouter>
   );

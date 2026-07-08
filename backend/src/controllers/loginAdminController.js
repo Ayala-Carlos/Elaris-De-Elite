@@ -27,7 +27,7 @@ loginAdminController.login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.cookie("authCookie", token, { httpOnly: true });
+    res.cookie("adminAuthCookie", token, { httpOnly: true });
     return res.status(200).json({ message: "Login exitoso", token, admin: { name: admin.name, email: admin.email } });
   } catch (error) {
     console.error(error);

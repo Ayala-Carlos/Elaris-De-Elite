@@ -4,40 +4,31 @@ import Navbar from "../components/BarraNavegacion.jsx";
 import Footer from "../components/Footer.jsx";
 import TarjetaNovedad from "../components/TarjetaNovedad.jsx";
 import Encabezado from "../components/Encabezado.jsx";
+import { useProducts } from "../hooks/useProducts.js";
 
 // Imágenes
 import Novedad1 from "../img/Novedad1.png";
-import Novedad2 from "../img/Novedad2.png";
-import Novedad3 from "../img/Novedad3.png";
-import Novedad4 from "../img/Novedad4.png";
 
-const novedades = [
-    {
-        id: 1,
-        img: Novedad2,
-        categoria: "Sostenibilidad",
-        titulo: "Línea eco-luxury y sostenible",
-        descripcion: "Presentamos nuestra nueva línea de productos con empaques 100% reciclables sin comprometer la calidad premium",
-        fecha: "15 Feb 2026"
-    },
-    {
-        id: 2,
-        img: Novedad3,
-        categoria: "Tutoriales",
-        titulo: "Look natural de día",
-        descripcion: "Aprende a crear un maquillaje fresco y elegante para cualquier ocasión usando productos estrella.",
-        fecha: "21 Feb 2026"
-    },
-    {
-        id: 3,
-        img: Novedad4,
-        categoria: "Eventos",
-        titulo: "Evento exclusivo VIP",
-        descripcion: "Únete a nuestro evento de lanzamiento con descuentos especiales y acceso anticipado.",
-        fecha: "5 Feb 2026"
-    }
-];
+const formatFecha = (isoDate) => {
+    if (!isoDate) return "";
+    return new Date(isoDate).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+};
+
 const Novedades = () => {
+    const { products, loading } = useProducts();
+
+    const novedades = [...products]
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+        .slice(0, 3)
+        .map((p) => ({
+            id: p.id,
+            img: p.img,
+            categoria: p.categoria,
+            titulo: p.nombre,
+            descripcion: p.raw?.description || "Descubre este producto recién agregado a nuestra colección.",
+            fecha: formatFecha(p.createdAt),
+        }));
+
     return (
         <div className="bg-[#FAF8F5] min-h-screen flex flex-col">
             <Navbar />
@@ -68,10 +59,11 @@ const Novedades = () => {
                 </div>
 
                 {/* GRID INFERIOR */}
+                {loading && <p className="text-sm text-gray-400">Cargando novedades...</p>}
                 <div className="grid md:grid-cols-3 gap-6">
                     {novedades.map((n) => (
                         <TarjetaNovedad key={n.id} novedad={n} />
-                    ))} 
+                    ))}
                 </div>
             </main>
             <Footer />

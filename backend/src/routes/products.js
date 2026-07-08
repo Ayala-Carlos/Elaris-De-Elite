@@ -2,13 +2,14 @@ import express from "express";
 
 import productsController from "../controllers/productsController.js";
 import upload from "../utils/cloudinaryConfig.js";
+import adminAuth from "../middlewares/adminAuth.js";
 
 const router = express.Router();
 
 //This endpoint is used to get all the products and to create a new product
 router.route("/")
   .get(productsController.getProducts)
-  .post(upload.array("images"), productsController.createProduct);
+  .post(adminAuth, upload.array("images"), productsController.createProduct);
 
 router.route("/search").post(productsController.searchProductbyname);
 router.route("/count").get(productsController.countProducts);
@@ -23,8 +24,8 @@ router.route("/searchBySize").post(productsController.searchBySize);
 router.route("/searchByMainFeatures").post(productsController.searchByMainFeatures);
 
 router.route("/:id")
-.put(upload.array("images"), productsController.updateProduct)
-.delete(productsController.deleteProduct)
+.put(adminAuth, upload.array("images"), productsController.updateProduct)
+.delete(adminAuth, productsController.deleteProduct)
 .get(productsController.getProductById);
 
 export default router;

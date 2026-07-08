@@ -12,28 +12,31 @@ const variantesEstilo = {
   outline: "border-2 border-[#D4A373] text-[#D4A373] bg-transparent hover:bg-[#F8F1ED] active:scale-95",
 };
 
-const Boton = ({ 
-  children,       
+const Boton = ({
+  children,
   tipo = "primario",
-  anchoTotal = false, 
+  anchoTotal = false,
   type = "button",
-  onClick,        
-  className = ""  
+  onClick,
+  disabled = false,
+  className = ""
 }) => {
-  
+
   return (
     <button
       type={type}
       onClick={onClick}
+      disabled={disabled}
       className={`
         flex items-center justify-center
-        py-3 px-6 
-        rounded-xl 
-        font-bold 
-        transition-all 
+        py-3 px-6
+        rounded-xl
+        font-bold
+        transition-all
         duration-200
-        ${variantesEstilo[tipo]} 
+        ${variantesEstilo[tipo]}
         ${anchoTotal ? 'w-full' : 'w-auto'}
+        ${disabled ? 'opacity-50 cursor-not-allowed active:scale-100' : ''}
         ${className}
       `}
     >

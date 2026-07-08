@@ -75,10 +75,12 @@ export default function Dashboard() {
         // 2. Mostrar los últimos 3 pedidos en la tabla
         setPedidos(listaPedidos.slice(0, 3));
 
-        // 3. Mapear y calcular dinámicamente los productos más vendidos desde las órdenes
+        // 3. Mapear y calcular dinámicamente los productos más vendidos desde las órdenes completadas
         const conteoProductos = {};
 
-        listaPedidos.forEach((pedido) => {
+        listaPedidos
+          .filter((p) => ["Completado", "completed"].includes(p.orderStatus || p.status))
+          .forEach((pedido) => {
           const productosEnCarrito = pedido.cartId?.products || [];
           productosEnCarrito.forEach((item) => {
             const producto = item.productId;

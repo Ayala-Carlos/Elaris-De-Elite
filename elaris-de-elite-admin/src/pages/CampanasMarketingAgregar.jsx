@@ -43,6 +43,7 @@ export default function AgregarCampana() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [campaignStatus, setCampaignStatus] = useState("active");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,13 +61,15 @@ export default function AgregarCampana() {
         setForm({
           nombre: campaign.campaignName || "",
           plataforma: campaign.platform || "",
-          presupuesto: campaign.assignedBudget || "",
+          presupuesto:
+            campaign.assignedBudget != null ? String(campaign.assignedBudget) : "",
           fechaInicio: campaign.startDate
             ? campaign.startDate.split("T")[0]
             : "",
           fechaFinal: campaign.endDate ? campaign.endDate.split("T")[0] : "",
           descripcion: campaign.description || "",
         });
+        setCampaignStatus(campaign.status || "active");
       } catch (error) {
         Swal.fire({
           icon: "error",
@@ -112,7 +115,7 @@ export default function AgregarCampana() {
         startDate: form.fechaInicio,
         endDate: form.fechaFinal,
         description: form.descripcion,
-        status: "active",
+        status: campaignStatus,
       };
 
       if (isEdit) {

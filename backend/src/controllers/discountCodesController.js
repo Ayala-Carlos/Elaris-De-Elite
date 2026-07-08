@@ -80,9 +80,14 @@ discountCodesController.searchByCodeAndIsAvailable = async(req, res) => {
     try{
         const {code} = req.body; //Request the code of the discount code that we want to search
         const discountCode = await discountCodesModel.findOne({code: code.trim().toUpperCase(), isActive: true}) //Find the discount code by its code, we trim and convert to uppercase to have a consistent format for the discount codes
-        if(!discountCode){ 
+        if(!discountCode){
             return res.status(404).json({message: "Discount code not found"})
         } //If the discount code is not found, show a message of error
+
+        //If the code has an expiration date and it already passed, treat it as unavailable
+        if(discountCode.expirationDate && discountCode.expirationDate < new Date()){
+            return res.status(404).json({message: "Discount code expired"})
+        }
 
         //If the discount code is found, send the data of the discount code
         return res.json(discountCode)

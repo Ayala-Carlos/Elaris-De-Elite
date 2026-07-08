@@ -40,11 +40,16 @@ const cartSchema = new Schema(
       type: Number,
     },
     discountAmount: {
-      type: String,
+      type: Number,
     },
     loyaltyPointsUsed: {
         type: Number
-    }
+    },
+    status: {
+      type: String,
+      enum: ["active", "completed"],
+      default: "active",
+    },
   },
   {
     // timestamps: true, add automatically createdAt and updatedAt fields to the collection documents, which makes it easier to track when records were created or modified.

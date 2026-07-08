@@ -1,20 +1,22 @@
 import express from "express"
 import customersController from "../controllers/customersConroller.js";
+import adminAuth from "../middlewares/adminAuth.js";
+import customerAuth from "../middlewares/customerAuth.js";
 
 
 const router = express.Router();
 
 router.route("/")
-.get(customersController.getCustomers)
+.get(adminAuth, customersController.getCustomers)
 
 router.route("/count")
-.get(customersController.countCustomers)
+.get(adminAuth, customersController.countCustomers)
 
 router.route("/searchByEmail")
-.post(customersController.searchCustomerByEmail)
+.post(customerAuth, customersController.searchCustomerByEmail)
 
 router.route("/:id")
-.put(customersController.updateCustomer)
-.delete(customersController.deleteCustomer)
+.put(customerAuth, customersController.updateCustomer)
+.delete(adminAuth, customersController.deleteCustomer)
 
 export default router;

@@ -5,6 +5,7 @@ const CajaTexto = ({
   value,
   onChange,
   className = "",
+  error,
   ...props
 }) => {
   return (
@@ -21,8 +22,12 @@ const CajaTexto = ({
         value={value || ""}
         onChange={onChange}
         {...props}
-        className="w-full px-4 py-3 rounded-2xl bg-[#f9f4ef] border-none focus:ring-2 focus:ring-[#d4ac80] outline-none transition-all"
+        className={`w-full px-4 py-3 rounded-2xl bg-[#f9f4ef] border outline-none transition-all ${
+          error ? "border-red-400 focus:ring-2 focus:ring-red-300" : "border-transparent focus:ring-2 focus:ring-[#d4ac80]"
+        }`}
       />
+
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
     </div>
   );
 };

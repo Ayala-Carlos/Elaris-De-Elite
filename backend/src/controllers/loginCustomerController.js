@@ -69,8 +69,8 @@ loginCustomerController.login = async (req, res) => {
       { expiresIn: "7d" },
     );
 
-    // Enviar el token en las cookies, con una duración de 1 hora
-    res.cookie("authCookie", token); //Guardamos el token en las cookies
+    // Enviar el token en las cookies, httpOnly para que no pueda ser leído/modificado por JS del cliente
+    res.cookie("customerAuthCookie", token, { httpOnly: true });
 
     //Si el login es exitoso, enviamos un mensaje de confirmación y el token
     res.status(200).json({ message: "Login successful", token });

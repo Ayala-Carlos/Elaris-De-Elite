@@ -24,7 +24,7 @@ cartController.getAllCarts = async (req, res) => {
     const carts = await cartModel
       .find()
       .populate("customerId", "name email phoneNumber") // This populates the customerId field in the cart documents with the name, email, pho fields from the Customers collection. It allows to retrieve the customer's name and email along with the cart information in a single query.
-      .populate("products.productId", "name price"); // This populates the productId field in the products array of the cart documents with the name and price fields from the Products collection. It allows to retrieve the product's name and price along with the cart information in a single query.
+      .populate("products.productId", "name price images"); // This populates the productId field in the products array of the cart documents with the name and price fields from the Products collection. It allows to retrieve the product's name and price along with the cart information in a single query.
 
     return res.status(200).json(carts);
   } catch (error) {
@@ -39,13 +39,43 @@ cartController.getCartById = async (req, res) => {
     const cart = await cartModel
       .findById(req.params.id)
       .populate("customerId", "name email phoneNumber")
-      .populate("products.productId", "name price");
+      .populate("products.productId", "name price images");
     //.populate("customerId", "-password") The populate will exclude the password
     //.populate("customerId", "") //If the second field stays with "", the populate brings all the information
+
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    // A customer may only look up their own cart
+    if (cart.customerId?._id?.toString() !== req.customer.id) {
+      return res.status(403).json({ message: "No autorizado" });
+    }
 
     return res.status(200).json(cart);
   } catch (error) {
     console.error("Error obtaining the carts:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+//SELECT the most recent cart of a given customer
+cartController.getCartByCustomer = async (req, res) => {
+  try {
+    // A customer may only look up their own cart
+    if (req.params.customerId !== req.customer.id) {
+      return res.status(403).json({ message: "No autorizado" });
+    }
+
+    const cart = await cartModel
+      .findOne({ customerId: req.params.customerId, status: "active" })
+      .sort({ updatedAt: -1 })
+      .populate("customerId", "name email phoneNumber")
+      .populate("products.productId", "name price images");
+
+    return res.status(200).json(cart);
+  } catch (error) {
+    console.error("Error obtaining the customer's cart:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -62,6 +92,11 @@ cartController.createCart = async (req, res) => {
       discountAmount,
       loyaltyPointsUsed,
     } = req.body; //We receive the products as an array of objects with productId and quantity, but we must calculate the subtotal for each product and the total for the cart before saving it in the DB.
+
+    // A customer may only create a cart for themselves
+    if (customerId !== req.customer.id) {
+      return res.status(403).json({ message: "No autorizado" });
+    }
 
     //////////////// Calculation of subtotal and total ///////////////
 
@@ -136,7 +171,17 @@ cartController.updateCart = async (req, res) => {
       lastUpdated,
       discountAmount,
       loyaltyPointsUsed,
+      status,
     } = req.body;
+
+    // A customer may only update their own cart
+    const existingCart = await cartModel.findById(req.params.id);
+    if (!existingCart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+    if (existingCart.customerId?.toString() !== req.customer.id) {
+      return res.status(403).json({ message: "No autorizado" });
+    }
 
     ////////// Calculate the total and subtotal /////////
     let total = 0;
@@ -192,6 +237,7 @@ cartController.updateCart = async (req, res) => {
       lastUpdated,
       discountAmount: discountValue,
       loyaltyPointsUsed,
+      status: status || "active",
     };
 
     const updatedCart = await cartModel.findByIdAndUpdate(
@@ -215,6 +261,16 @@ cartController.updateCart = async (req, res) => {
 //DELETE A CART
 cartController.deleteCart = async (req, res) => {
   try {
+    const existingCart = await cartModel.findById(req.params.id);
+    if (!existingCart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    // A customer may only delete their own cart
+    if (existingCart.customerId?.toString() !== req.customer.id) {
+      return res.status(403).json({ message: "No autorizado" });
+    }
+
     const deleted = await cartModel.findByIdAndDelete(req.params.id); //Search the cart by its id and delete it
 
     if (!deleted) {
