@@ -63,6 +63,8 @@ customersController.updateCustomer = async (req, res) => {
         loginAttempts,
         timeOut,
         loyaltyPoints,
+        country,
+        address,
     } = req.body;
 
     //Validations. Password is optional on update: if it's not provided, the current one is kept
@@ -118,6 +120,12 @@ customersController.updateCustomer = async (req, res) => {
     if (password) {
       updatePayload.password = await bcryptjs.hash(password, 10);
     }
+
+    // country/address are not part of the original schema fields above, but the
+    // model is strict:false, so we only include them when the client sends them
+    // (used by the mobile app's profile screen).
+    if (country !== undefined) updatePayload.country = country;
+    if (address !== undefined) updatePayload.address = address;
 
     //Actualizaciones
     const updateCustomer = await customerModel.findByIdAndUpdate(

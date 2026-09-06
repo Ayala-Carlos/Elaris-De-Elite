@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EncabezadoInicio } from "../components/EncabezadoInicio.jsx";
+import { MenuDesplegable } from "../components/MenuDesplegable.jsx";
 import { TarjetaProductoCategoria } from "../components/TarjetaProductoCategoria.jsx";
 import { useCarrito } from "../hooks/useCarrito.js";
 import { useProductos } from "../hooks/useProductos.js";
@@ -15,6 +16,7 @@ export const CategoriaPantalla = ({ route, navigation }) => {
   const { productos, cargando } = useProductos();
   const { agregarProducto } = useCarrito();
   const [buscar, setBuscar] = useState("");
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const productosDeCategoria = useMemo(() => {
     const deLaCategoria = productos.filter((p) => p.categoria === categoria);
@@ -38,8 +40,13 @@ export const CategoriaPantalla = ({ route, navigation }) => {
       <EncabezadoInicio
         buscar={buscar}
         onCambiarBuscar={setBuscar}
-        onPresionarCarrito={() => navigation.navigate("Carrito")}
-        onPresionarMenu={() => navigation.navigate("Perfil")}
+        onPresionarCarrito={() => navigation.navigate("Principal", { screen: "Carrito" })}
+        onPresionarMenu={() => setMenuVisible(true)}
+      />
+      <MenuDesplegable
+        visible={menuVisible}
+        onCerrar={() => setMenuVisible(false)}
+        navigation={navigation}
       />
 
       <FlatList

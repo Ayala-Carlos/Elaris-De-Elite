@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EncabezadoInicio } from "../components/EncabezadoInicio.jsx";
+import { MenuDesplegable } from "../components/MenuDesplegable.jsx";
 import { SeccionProductos } from "../components/SeccionProductos.jsx";
 import { useAutenticacion } from "../hooks/useAutenticacion.js";
 import { useProductos } from "../hooks/useProductos.js";
@@ -14,6 +15,7 @@ export const InicioPantalla = ({ navigation }) => {
   const { cliente } = useAutenticacion();
   const { productos, categorias, cargando } = useProductos();
   const [busqueda, setBusqueda] = useState("");
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const primerNombre = (cliente?.name || "").split(" ")[0] || "";
 
@@ -32,7 +34,12 @@ export const InicioPantalla = ({ navigation }) => {
         buscar={busqueda}
         onCambiarBuscar={setBusqueda}
         onPresionarCarrito={() => navigation.navigate("Carrito")}
-        onPresionarMenu={() => navigation.navigate("Perfil")}
+        onPresionarMenu={() => setMenuVisible(true)}
+      />
+      <MenuDesplegable
+        visible={menuVisible}
+        onCerrar={() => setMenuVisible(false)}
+        navigation={navigation}
       />
 
       <ScrollView showsVerticalScrollIndicator={false}>

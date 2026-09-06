@@ -75,6 +75,32 @@ export const ProveedorAutenticacion = ({ children }) => {
       confirmarContrasena,
     );
 
+  // Actualiza uno o varios campos del perfil del cliente (usado por la
+  // pantalla de perfil, campo por campo). Envía siempre los datos
+  // obligatorios del backend (name, email) junto con los cambios.
+  const actualizarCliente = async (cambios) => {
+    if (!cliente?._id) {
+      throw new Error("No hay una sesión activa");
+    }
+
+    const datos = {
+      name: cliente.name,
+      email: cliente.email,
+      phoneNumber: cliente.phoneNumber,
+      country: cliente.country,
+      address: cliente.address,
+      ...cambios,
+    };
+
+    await servicioClientes.actualizar(cliente._id, datos);
+
+    // La contraseña nunca se guarda en el cliente persistido, solo se envía al backend.
+    const { password, ...datosSinContrasena } = datos;
+    const clienteActualizado = { ...cliente, ...datosSinContrasena };
+    await persistirCliente(clienteActualizado);
+    return clienteActualizado;
+  };
+
   const cerrarSesion = async () => {
     try {
       await servicioAutenticacion.cerrarSesion();
@@ -95,6 +121,7 @@ export const ProveedorAutenticacion = ({ children }) => {
         solicitarCodigoRecuperacion,
         verificarCodigoRecuperacion,
         restablecerContrasena,
+        actualizarCliente,
         cerrarSesion,
       }}
     >

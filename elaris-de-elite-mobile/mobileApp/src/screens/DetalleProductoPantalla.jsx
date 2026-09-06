@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { EncabezadoInicio } from "../components/EncabezadoInicio.jsx";
+import { MenuDesplegable } from "../components/MenuDesplegable.jsx";
 import { MuestraColor } from "../components/MuestraColor.jsx";
 import { useCarrito } from "../hooks/useCarrito.js";
 import { servicioProductos } from "../services/servicioProductos.js";
@@ -19,6 +21,7 @@ export const DetalleProductoPantalla = ({ route, navigation }) => {
   const [indiceImagen, setIndiceImagen] = useState(0);
   const [cantidad, setCantidad] = useState(1);
   const [agregando, setAgregando] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
 
   useEffect(() => {
     let activo = true;
@@ -46,6 +49,8 @@ export const DetalleProductoPantalla = ({ route, navigation }) => {
       </SafeAreaView>
     );
   }
+
+  const abrirMenu = () => setMenuVisible(true);
 
   const imagenes = producto.images || [];
   const hayVariasImagenes = imagenes.length > 1;
@@ -75,6 +80,17 @@ export const DetalleProductoPantalla = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={estilos.contenedor}>
+      <EncabezadoInicio
+        mostrarBuscador={false}
+        onPresionarCarrito={() => navigation.navigate("Principal", { screen: "Carrito" })}
+        onPresionarMenu={abrirMenu}
+      />
+      <MenuDesplegable
+        visible={menuVisible}
+        onCerrar={() => setMenuVisible(false)}
+        navigation={navigation}
+      />
+
       <ScrollView>
         <Pressable style={estilos.volver} onPress={() => navigation.goBack()} hitSlop={8}>
           <Text style={estilos.textoVolver}>‹ volver a inicio</Text>

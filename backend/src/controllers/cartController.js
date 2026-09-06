@@ -39,7 +39,11 @@ cartController.getCartById = async (req, res) => {
     const cart = await cartModel
       .findById(req.params.id)
       .populate("customerId", "name email phoneNumber")
-      .populate("products.productId", "name price images");
+      .populate({
+        path: "products.productId",
+        select: "name price images idCategory",
+        populate: { path: "idCategory", select: "name" },
+      });
     //.populate("customerId", "-password") The populate will exclude the password
     //.populate("customerId", "") //If the second field stays with "", the populate brings all the information
 
@@ -71,7 +75,11 @@ cartController.getCartByCustomer = async (req, res) => {
       .findOne({ customerId: req.params.customerId, status: "active" })
       .sort({ updatedAt: -1 })
       .populate("customerId", "name email phoneNumber")
-      .populate("products.productId", "name price images");
+      .populate({
+        path: "products.productId",
+        select: "name price images idCategory",
+        populate: { path: "idCategory", select: "name" },
+      });
 
     return res.status(200).json(cart);
   } catch (error) {

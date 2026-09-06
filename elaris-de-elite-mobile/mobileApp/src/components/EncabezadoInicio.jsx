@@ -4,11 +4,18 @@ import { colores } from "../theme/colores.js";
 
 const imagenLogo = require("../../assets/logoElarisElite.png");
 
-// Encabezado superior de la pantalla de inicio: logo, buscador,
-// carrito y menú, replicando el diseño de la app web.
-export const EncabezadoInicio = ({ buscar, onCambiarBuscar, onPresionarCarrito, onPresionarMenu }) => (
+// Encabezado superior reutilizado en varias pantallas: logo, carrito y menú,
+// con un buscador opcional (mostrarBuscador=false lo oculta, como en el
+// detalle de producto, el carrito y el perfil), replicando el diseño web.
+export const EncabezadoInicio = ({
+  buscar,
+  onCambiarBuscar,
+  onPresionarCarrito,
+  onPresionarMenu,
+  mostrarBuscador = true,
+}) => (
   <View style={estilos.contenedor}>
-    <View style={estilos.filaSuperior}>
+    <View style={[estilos.filaSuperior, !mostrarBuscador && estilos.filaSuperiorSinBuscador]}>
       <View style={estilos.marca}>
         <Image source={imagenLogo} resizeMode="contain" style={estilos.logo} />
         <Text style={estilos.nombreMarca}>ÉLARIS DE ÉLITE</Text>
@@ -29,16 +36,18 @@ export const EncabezadoInicio = ({ buscar, onCambiarBuscar, onPresionarCarrito, 
         />
       </View>
     </View>
-    <View style={estilos.buscador}>
-      <Ionicons name="search-outline" size={18} color={colores.textoClaro} />
-      <TextInput
-        value={buscar}
-        onChangeText={onCambiarBuscar}
-        placeholder="Buscar"
-        placeholderTextColor={colores.textoClaro}
-        style={estilos.entradaBusqueda}
-      />
-    </View>
+    {mostrarBuscador && (
+      <View style={estilos.buscador}>
+        <Ionicons name="search-outline" size={18} color={colores.textoClaro} />
+        <TextInput
+          value={buscar}
+          onChangeText={onCambiarBuscar}
+          placeholder="Buscar"
+          placeholderTextColor={colores.textoClaro}
+          style={estilos.entradaBusqueda}
+        />
+      </View>
+    )}
   </View>
 );
 
@@ -57,6 +66,7 @@ const estilos = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 10,
   },
+  filaSuperiorSinBuscador: { marginBottom: 0 },
   marca: { flexDirection: "row", alignItems: "center", flexShrink: 1 },
   logo: { width: 28, height: 28, marginRight: 6 },
   nombreMarca: {
