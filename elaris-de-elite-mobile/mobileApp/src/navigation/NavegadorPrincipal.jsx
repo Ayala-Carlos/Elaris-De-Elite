@@ -17,6 +17,7 @@ import { CarritoPantalla } from "../screens/CarritoPantalla.jsx";
 import { PedidosPantalla } from "../screens/PedidosPantalla.jsx";
 import { PerfilPantalla } from "../screens/PerfilPantalla.jsx";
 import { DetalleProductoPantalla } from "../screens/DetalleProductoPantalla.jsx";
+import { CategoriaPantalla } from "../screens/CategoriaPantalla.jsx";
 
 const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
@@ -79,6 +80,7 @@ export const NavegadorPrincipal = () => {
           <>
             <Stack.Screen name="Principal" component={PestanasPrincipales} />
             <Stack.Screen name="DetalleProducto" component={DetalleProductoPantalla} />
+            <Stack.Screen name="Categoria" component={CategoriaPantalla} />
           </>
         ) : (
           <>

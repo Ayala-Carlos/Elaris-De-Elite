@@ -5,6 +5,7 @@ export const colores = {
   primario: "#D4A574", // dorado/tostado - botones principales, acentos
   primarioOscuro: "#C29263", // estado presionado del color primario
   secundario: "#E89B9B", // rosa - detalles, etiquetas suaves
+  secundarioClaro: "#FBEAEA", // rosa muy claro - fondos de encabezados de categoría
   texto: "#6B5B4E", // café oscuro - títulos y texto principal
   textoClaro: "#9E8F83", // café claro - texto secundario / placeholders
   fondo: "#FAF8F5", // fondo general de las pantallas

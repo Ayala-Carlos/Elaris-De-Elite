@@ -6,6 +6,7 @@ import { SeccionProductos } from "../components/SeccionProductos.jsx";
 import { useAutenticacion } from "../hooks/useAutenticacion.js";
 import { useProductos } from "../hooks/useProductos.js";
 import { colores } from "../theme/colores.js";
+import { capitalizar } from "../utils/formatoTexto.js";
 
 // Pantalla principal: saludo, banner de colección destacada y productos
 // agrupados por categoría, tal como en el diseño de referencia.
@@ -60,13 +61,12 @@ export const InicioPantalla = ({ navigation }) => {
           categoriasParaMostrar.map((categoria) => (
             <SeccionProductos
               key={categoria}
-              titulo={
-                categoria.charAt(0) + categoria.slice(1).toLowerCase()
-              }
+              titulo={capitalizar(categoria)}
               productos={productosFiltrados.filter((p) => p.categoria === categoria)}
               onPresionarProducto={(producto) =>
                 navigation.navigate("DetalleProducto", { id: producto.id })
               }
+              onVerMas={() => navigation.navigate("Categoria", { categoria })}
             />
           ))}
 
