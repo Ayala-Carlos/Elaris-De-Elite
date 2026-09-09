@@ -49,6 +49,10 @@ recoveryPasswordController.requestCode = async (req, res) => {
         user: config.email.user_email,
         pass: config.email.user_password,
       },
+      // ⚠️ Solo en desarrollo: evita el error "self-signed certificate in
+      // certificate chain" que provocan antivirus/proxies con inspección SSL.
+      // Nunca debe ir en producción.
+      tls: process.env.NODE_ENV === "production" ? undefined : { rejectUnauthorized: false },
     });
 
     //#2 - Who receives the email and how?
