@@ -72,7 +72,7 @@ export const RegistrarsePantalla = ({ navigation }) => {
         "Revisa tu correo",
         "Te enviamos un código de verificación para activar tu cuenta.",
       );
-      navigation.navigate("IniciarSesion");
+      navigation.navigate("VerificarCodigo", { correo: datos.correo.trim() });
     } catch (error) {
       Alert.alert("No se pudo completar el registro", error.message);
     } finally {

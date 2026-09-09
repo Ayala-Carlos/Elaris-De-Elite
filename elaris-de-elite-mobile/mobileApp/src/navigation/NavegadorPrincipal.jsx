@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { useAutenticacion } from "../hooks/useAutenticacion.js";
 import { colores } from "../theme/colores.js";
-
+import { VerificarCodigoPantalla } from "../screens/VerificarCodigoPantalla.jsx";
 import { BienvenidaPantalla } from "../screens/BienvenidaPantalla.jsx";
 import { IniciarSesionPantalla } from "../screens/IniciarSesionPantalla.jsx";
 import { RegistrarsePantalla } from "../screens/RegistrarsePantalla.jsx";
@@ -87,6 +87,7 @@ export const NavegadorPrincipal = () => {
             <Stack.Screen name="Bienvenida" component={BienvenidaPantalla} />
             <Stack.Screen name="IniciarSesion" component={IniciarSesionPantalla} />
             <Stack.Screen name="Registrarse" component={RegistrarsePantalla} />
+            <Stack.Screen name="VerificarCodigo" component={VerificarCodigoPantalla} />
             <Stack.Screen
               name="RecuperarContrasena"
               component={RecuperarContrasenaPantalla}
