@@ -16,6 +16,7 @@ import { InicioPantalla } from "../screens/InicioPantalla.jsx";
 import { ProductosPantalla } from "../screens/ProductosPantalla.jsx";
 import { CarritoPantalla } from "../screens/CarritoPantalla.jsx";
 import { PedidosPantalla } from "../screens/PedidosPantalla.jsx";
+import { DetallePedidoPantalla } from "../screens/DetallePedidoPantalla.jsx";
 import { PerfilPantalla } from "../screens/PerfilPantalla.jsx";
 import { DetalleProductoPantalla } from "../screens/DetalleProductoPantalla.jsx";
 import { CategoriaPantalla } from "../screens/CategoriaPantalla.jsx";
@@ -74,6 +75,7 @@ export const NavegadorPrincipal = () => {
             <Stack.Screen name="Principal" component={PestanasPrincipales} />
             <Stack.Screen name="DetalleProducto" component={DetalleProductoPantalla} />
             <Stack.Screen name="Categoria" component={CategoriaPantalla} />
+            <Stack.Screen name="DetallePedido" component={DetallePedidoPantalla} />
             <Stack.Screen name="Terminos" component={TerminosPantalla} />
           </>
         ) : (
@@ -86,6 +88,7 @@ export const NavegadorPrincipal = () => {
               name="RecuperarContrasena"
               component={RecuperarContrasenaPantalla}
             />
+            <Stack.Screen name="Terminos" component={TerminosPantalla} />
           </>
         )}
       </Stack.Navigator>

@@ -254,6 +254,14 @@ export const CarritoPantalla = ({ navigation }) => {
               >
                 Proceder con pago de prueba
               </Boton>
+
+              <Text style={estilos.avisoTerminos}>
+                Al continuar, aceptas nuestros{" "}
+                <Text style={estilos.enlaceTerminos} onPress={() => navigation.navigate("Terminos")}>
+                  términos y condiciones
+                </Text>
+                .
+              </Text>
               <Boton
                 tipo="secundario"
                 estilo={{ marginTop: 10 }}
@@ -349,6 +357,13 @@ const estilos = StyleSheet.create({
     marginRight: 10,
   },
   botonCodigo: { paddingHorizontal: 18, paddingVertical: 10 },
+  avisoTerminos: {
+    textAlign: "center",
+    fontSize: 11,
+    color: colores.textoClaro,
+    marginTop: 10,
+  },
+  enlaceTerminos: { color: colores.primario, fontWeight: "700" },
   beneficios: { marginTop: 22 },
   filaBeneficio: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
   textoBeneficio: { marginLeft: 8, fontSize: 12, color: colores.textoClaro, flexShrink: 1 },

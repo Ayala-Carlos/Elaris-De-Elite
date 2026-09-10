@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EncabezadoInicio } from "../components/EncabezadoInicio.jsx";
 import { MenuDesplegable } from "../components/MenuDesplegable.jsx";
@@ -14,17 +14,25 @@ import { colores } from "../theme/colores.js";
 const ESTADOS_ENTREGADO = ["completed", "completado", "delivered", "entregado"];
 
 // Adapta un pedido del backend (orders + cartId poblado) al formato que
-// espera TarjetaPedido.
+// espera TarjetaPedido y la pantalla de detalle del pedido.
 const adaptarPedido = (pedido) => {
   const carrito = pedido.cartId || {};
-  const direccion = pedido.address?.[0];
-  const cantidadProductos = (carrito.products || []).reduce(
-    (suma, p) => suma + (p.quantity || 0),
-    0,
-  );
+  const direccion = pedido.address?.[0] || {};
+  const pago = pedido.payment?.[0] || {};
+  const productos = (carrito.products || []).map((p) => ({
+    id: p.productId?._id || p.productId,
+    nombre: p.productId?.name || "Producto",
+    imagen: p.productId?.images?.[0]?.image,
+    cantidad: p.quantity || 0,
+    subtotal: Number(p.subtotal ?? 0),
+  }));
+  const cantidadProductos = productos.reduce((suma, p) => suma + p.cantidad, 0);
+  const descuento = Number(carrito.discountAmount ?? 0);
+  const total = Number(carrito.totalAmount ?? 0);
 
   return {
     id: pedido._id,
+    estadoTexto: pedido.orderStatus,
     estado: ESTADOS_ENTREGADO.includes(String(pedido.orderStatus).toLowerCase())
       ? "entregado"
       : "proceso",
@@ -34,8 +42,14 @@ const adaptarPedido = (pedido) => {
     ubicacion: [direccion?.country, direccion?.city || direccion?.state]
       .filter(Boolean)
       .join(" "),
+    direccion,
     cantidadProductos,
-    total: Number(carrito.totalAmount ?? 0),
+    productos,
+    subtotal: total + descuento,
+    descuento,
+    total,
+    metodoPago: pago.paymentMethod,
+    estadoPago: pago.paymentStatus,
   };
 };
 
@@ -105,9 +119,7 @@ export const PedidosPantalla = ({ navigation }) => {
             ubicacion={pedido.ubicacion}
             cantidadProductos={pedido.cantidadProductos}
             total={pedido.total}
-            onPressDetalles={() =>
-              Alert.alert("Próximamente", "El detalle del pedido estará disponible pronto.")
-            }
+            onPressDetalles={() => navigation.navigate("DetallePedido", { pedido })}
           />
         ))}
       </ScrollView>

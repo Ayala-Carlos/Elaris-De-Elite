@@ -30,12 +30,7 @@ export const MenuDesplegable = ({ visible, onCerrar, navigation }) => {
     }
   };
 
-  const verTerminos = () => {
-    Alert.alert(
-      "Términos y condiciones",
-      "Este contenido estará disponible próximamente.",
-    );
-  };
+  const verTerminos = () => irA("Terminos");
 
   return (
     <Modal visible={visible} animationType="fade" transparent onRequestClose={onCerrar}>
