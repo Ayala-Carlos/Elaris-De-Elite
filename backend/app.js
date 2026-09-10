@@ -18,6 +18,7 @@ import loginAdminRoutes from './src/routes/loginAdmin.js';
 import registerAdminRoutes from './src/routes/registerAdmin.js';
 import reviewsRoutes from './src/routes/reviews.js';
 import contactRoutes from './src/routes/contact.js';
+import wompiRoutes from './src/routes/wompi.js';
 //import limiter from './src/middlewares/limiter.js';
 
 import cors from 'cors'; 
@@ -60,5 +61,7 @@ app.use('/api/loginAdmin', loginAdminRoutes);
 app.use('/api/registerAdmin', registerAdminRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/contact', contactRoutes);
+app.use("/api/wompi", wompiRoutes)
+
 
 export default app;
