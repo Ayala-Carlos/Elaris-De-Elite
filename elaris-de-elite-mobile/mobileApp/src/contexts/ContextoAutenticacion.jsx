@@ -6,6 +6,14 @@ import { servicioClientes } from "../services/servicioClientes.js";
 
 const CLAVE_ALMACENAMIENTO = "@elaris_de_elite_cliente";
 
+// Tiempo mínimo (ms) que se mantiene visible la pantalla de carga
+// (PantallaCarga.jsx) al abrir la app. AsyncStorage.getItem resuelve casi
+// instantáneo, así que sin este mínimo la pantalla de carga alcanza a
+// parpadear y desaparece antes de que su animación llegue a verse.
+const DURACION_MINIMA_CARGA = 1100;
+
+const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const ContextoAutenticacion = createContext(null);
 
 // Provee el estado de sesión (cliente autenticado) a toda la app,
@@ -17,12 +25,17 @@ export const ProveedorAutenticacion = ({ children }) => {
 
   useEffect(() => {
     const cargarSesion = async () => {
+      const inicio = Date.now();
       try {
         const guardado = await AsyncStorage.getItem(CLAVE_ALMACENAMIENTO);
         if (guardado) setCliente(JSON.parse(guardado));
       } catch (error) {
         console.log("No se pudo recuperar la sesión guardada:", error);
       } finally {
+        const transcurrido = Date.now() - inicio;
+        if (transcurrido < DURACION_MINIMA_CARGA) {
+          await esperar(DURACION_MINIMA_CARGA - transcurrido);
+        }
         setCargando(false);
       }
     };

@@ -8,11 +8,17 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "backgroundColor": "#FAF8F5",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FAF8F5"
-    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#FAF8F5"
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
       "backgroundColor": "#FAF8F5"
