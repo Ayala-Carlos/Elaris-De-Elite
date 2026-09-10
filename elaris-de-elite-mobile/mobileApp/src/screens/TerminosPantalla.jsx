@@ -23,19 +23,34 @@ export const TerminosPantalla = ({ navigation }) => {
 
         <Text style={estilos.titulo}>Términos y condiciones</Text>
 
-        
+        <View style={estilos.tarjetaFondo}>
+          
+    
+
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const estilos = StyleSheet.create({
-  // Estilos Commit 6
   contenedor: { flex: 1, backgroundColor: colores.fondo },
   scroll: { padding: 24, paddingTop: 16 },
   botonVolver: { marginBottom: 16 },
   textoVolver: { fontSize: 12, color: colores.secundario, fontWeight: "600" },
   titulo: { fontSize: 22, fontWeight: "800", color: colores.texto, marginBottom: 20 },
+  
+  tarjetaFondo: {
+    backgroundColor: colores.secundarioClaro, // Fondo rosa clarito
+    borderRadius: 16,
+    padding: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   
 });
 
