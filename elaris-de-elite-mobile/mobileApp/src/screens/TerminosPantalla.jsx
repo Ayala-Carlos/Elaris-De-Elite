@@ -25,9 +25,20 @@ export const TerminosPantalla = ({ navigation }) => {
 
         <View style={estilos.tarjetaFondo}>
           
-    
+          <Text style={estilos.textoLegal}>
+            Al acceder a esta aplicación, aceptas cumplir con sus reglas y regulaciones.{"\n"}
+            Todo el contenido y material intelectual pertenecen a Élaris de Élite o a sus licenciantes, y su uso está limitado a fines personales bajo las restricciones establecidas. Respecto a la logística, los tiempos de envío dependen de tu ubicación y se permiten devoluciones dentro de los 30 días posteriores a la recepción, siempre que los productos estén en su estado original y sin usar.
+          </Text>
+
+          <TouchableOpacity onPress={() => console.log("Navegar a web de términos")}>
+            <Text style={estilos.enlaceSaberMas}>
+              Saber mas acerca de nuestros terminos y condiciones
+            </Text>
+          </TouchableOpacity>
 
         </View>
+        
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -52,6 +63,19 @@ const estilos = StyleSheet.create({
     elevation: 2,
   },
   
+  textoLegal: {
+    fontSize: 13,
+    color: colores.texto,
+    textAlign: "center",
+    lineHeight: 20, 
+    marginBottom: 30, 
+  },
+  
+  enlaceSaberMas: {
+    fontSize: 11,
+    color: colores.textoClaro,
+    textAlign: "center",
+  },
 });
 
 export default TerminosPantalla;
