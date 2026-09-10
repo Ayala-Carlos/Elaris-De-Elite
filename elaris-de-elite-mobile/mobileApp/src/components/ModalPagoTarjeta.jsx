@@ -16,6 +16,17 @@ import { colores } from "../theme/colores.js";
 
 const DATOS_INICIALES = { numero: "", nombreEnTarjeta: "", mes: "", anio: "", cvv: "" };
 
+// Tarjeta de prueba verificada contra el sandbox real de Wompi (ver README):
+// cualquier otro número puede ser rechazado por Wompi al no reconocerlo
+// como una tarjeta de pruebas válida.
+const TARJETA_DE_PRUEBA = {
+  numero: "4111 1111 1111 1111",
+  nombreEnTarjeta: "Cliente de Prueba",
+  mes: "12",
+  anio: "2030",
+  cvv: "123",
+};
+
 // Modal de pago con tarjeta (sandbox/pruebas de Wompi) que se abre desde el
 // carrito al presionar "Proceder con pago". Solo recolecta los datos de la
 // tarjeta; el cobro real (tokenización + transacción) lo hace el backend.
@@ -51,6 +62,11 @@ export const ModalPagoTarjeta = ({ visible, total, cargando, onCerrar, onConfirm
     onConfirmar(datos);
   };
 
+  const usarTarjetaDePrueba = () => {
+    setDatos(TARJETA_DE_PRUEBA);
+    setErrores({});
+  };
+
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={cerrar}>
       <View style={estilos.fondo}>
@@ -69,8 +85,13 @@ export const ModalPagoTarjeta = ({ visible, total, cargando, onCerrar, onConfirm
             <View style={estilos.franjaAviso}>
               <Ionicons name="shield-checkmark-outline" size={16} color={colores.primarioOscuro} />
               <Text style={estilos.aviso}>
-                Este es el ambiente de pruebas: ningún dato de tarjeta
-                que ingreses aquí genera un cobro real, sin importar qué número escribas.
+                Este es el ambiente de pruebas: ningún dato de tarjeta que ingreses
+                aquí genera un cobro real. Wompi sí valida que el número de tarjeta
+                tenga un formato válido, así que un número inventado puede ser
+                rechazado.{" "}
+                <Text style={estilos.enlaceTarjetaPrueba} onPress={usarTarjetaDePrueba}>
+                  Usar tarjeta de prueba
+                </Text>
               </Text>
             </View>
 
@@ -176,6 +197,10 @@ const estilos = StyleSheet.create({
     fontWeight: "600",
     color: colores.primarioOscuro,
     lineHeight: 17,
+  },
+  enlaceTarjetaPrueba: {
+    color: colores.acento,
+    textDecorationLine: "underline",
   },
   total: { fontSize: 14, fontWeight: "700", color: colores.acento, marginBottom: 16 },
   filaTriple: { flexDirection: "row", justifyContent: "space-between" },

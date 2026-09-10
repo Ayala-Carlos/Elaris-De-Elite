@@ -106,8 +106,10 @@ export const CarritoPantalla = ({ navigation }) => {
       setModalPagoVisible(false);
       Alert.alert(
         "Pedido realizado (pago de prueba)",
-        pago?.mensaje ||
-          "Tu pago de prueba se procesó correctamente con Wompi. No se realizó ningún cobro real.",
+        `${
+          pago?.mensaje ||
+          "Tu pago de prueba se procesó correctamente con Wompi. No se realizó ningún cobro real."
+        }\n\nTe enviamos un comprobante de pago (de prueba) a tu correo: ${cliente.email}.`,
         [{ text: "Ver mis pedidos", onPress: () => navigation.navigate("Pedidos") }],
       );
     } catch (error) {

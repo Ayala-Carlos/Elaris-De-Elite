@@ -180,7 +180,15 @@ wompiController.payWithCard = async (req, res) => {
                 monto,
                 emailCliente,
                 nombreCliente,
-                tokenTarjeta: tokenizacion.token
+                tokenTarjeta: tokenizacion.token,
+                // Le pedimos a Wompi que notifique la transacción (comprobante de
+                // pago de prueba) al correo del cliente. Es "mejor esfuerzo": si
+                // Wompi no llega a enviarlo en su ambiente de pruebas, el pago
+                // igual se procesa con normalidad.
+                configuracion: {
+                    notificarTransaccionCliente: true,
+                    emailsNotificacion: emailCliente
+                }
             })
         });
 
