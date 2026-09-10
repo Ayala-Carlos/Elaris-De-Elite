@@ -61,12 +61,13 @@ export const RegistrarsePantalla = ({ navigation }) => {
         email: datos.correo.trim(),
         password: datos.contrasena,
         phoneNumber: datos.telefono,
-        // País, estado, ciudad y dirección se capturan en el formulario
-        // para completar el perfil del cliente en el futuro.
-        pais: datos.pais,
-        estado: datos.estado,
-        ciudad: datos.ciudad,
-        direccion: datos.direccion,
+        // País, estado, ciudad y dirección se capturan en el formulario y se
+        // guardan con estos mismos nombres de campo en el backend, para que
+        // se vean en la pantalla de perfil (ver PerfilPantalla.jsx).
+        country: datos.pais.trim(),
+        state: datos.estado.trim(),
+        city: datos.ciudad.trim(),
+        address: datos.direccion.trim(),
       });
       Alert.alert(
         "Revisa tu correo",

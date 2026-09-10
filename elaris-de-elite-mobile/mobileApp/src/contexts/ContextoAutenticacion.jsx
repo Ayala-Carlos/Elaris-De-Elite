@@ -88,6 +88,8 @@ export const ProveedorAutenticacion = ({ children }) => {
       email: cliente.email,
       phoneNumber: cliente.phoneNumber,
       country: cliente.country,
+      state: cliente.state,
+      city: cliente.city,
       address: cliente.address,
       ...cambios,
     };

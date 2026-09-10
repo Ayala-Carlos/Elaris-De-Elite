@@ -9,6 +9,10 @@ export async function solicitudApi(ruta, opciones = {}) {
 
   const respuesta = await fetch(`${URL_API}${ruta}`, {
     ...opciones,
+    // Necesario para que la cookie httpOnly de sesión (customerAuthCookie) se
+    // guarde y se reenvíe en cada petición, tanto en nativo como al correr
+    // la app con "expo start --web".
+    credentials: "include",
     headers: esFormData
       ? opciones.headers
       : { "Content-Type": "application/json", ...(opciones.headers || {}) },

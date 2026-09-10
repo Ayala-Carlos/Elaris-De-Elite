@@ -108,9 +108,21 @@ export const PerfilPantalla = ({ navigation }) => {
             onGuardar={(valor) => guardarCampo("country", valor)}
           />
           <FilaPerfilEditable
+            etiqueta="Estado"
+            valor={cliente?.state}
+            marcador="Ej. San Salvador"
+            onGuardar={(valor) => guardarCampo("state", valor)}
+          />
+          <FilaPerfilEditable
+            etiqueta="Ciudad"
+            valor={cliente?.city}
+            marcador="Ej. San Salvador"
+            onGuardar={(valor) => guardarCampo("city", valor)}
+          />
+          <FilaPerfilEditable
             etiqueta="Dirección"
             valor={cliente?.address}
-            marcador="Ej. San Salvador, San Salvador"
+            marcador="Ej. Colonia Escalón, calle El Mirador #123"
             onGuardar={(valor) => guardarCampo("address", valor)}
           />
         </View>

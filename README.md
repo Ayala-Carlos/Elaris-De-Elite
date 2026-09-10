@@ -10,10 +10,10 @@ Este repositorio contiene la tienda en línea completa: la API backend, la tiend
 
 ```
 Elaris-De-Elite/
-├── backend/                    # API REST (Node.js + Express + MongoDB)
-├── elaris-de-elite-client/     # Tienda pública para clientes (React + Vite)
-├── elaris-de-elite-admin/      # Panel de administración (React + Vite)
-└── elaris-de-elite-mobile/     # Prototipo de la versión móvil (React + Vite)
+├── backend/                          # API REST (Node.js + Express + MongoDB)
+├── elaris-de-elite-client/           # Tienda pública para clientes (React + Vite)
+├── elaris-de-elite-admin/            # Panel de administración (React + Vite)
+└── elaris-de-elite-mobile/mobileApp/ # App móvil para clientes (React Native + Expo)
 ```
 
 Cada subproyecto tiene su propio `README.md` con instrucciones detalladas de instalación, variables de entorno y estructura interna:
@@ -21,12 +21,13 @@ Cada subproyecto tiene su propio `README.md` con instrucciones detalladas de ins
 - [`backend/README.md`](./backend/README.md)
 - [`elaris-de-elite-client/README.md`](./elaris-de-elite-client/README.md)
 - [`elaris-de-elite-admin/README.md`](./elaris-de-elite-admin/README.md)
+- [`elaris-de-elite-mobile/mobileApp/README.md`](./elaris-de-elite-mobile/mobileApp/README.md)
 
 ---
 
 ## Cómo ejecutar el proyecto completo
 
-Se necesitan **tres terminales** simultáneas (backend, cliente y admin):
+Se necesitan varias terminales simultáneas (backend, cliente, admin y, opcionalmente, la app móvil):
 
 ```bash
 # 1. Backend — http://localhost:3000
@@ -44,6 +45,11 @@ npm run dev
 cd elaris-de-elite-admin
 npm install
 npm run dev
+
+# 4. App móvil (Expo)
+cd elaris-de-elite-mobile/mobileApp
+npm install
+npm start
 ```
 
 ---
@@ -53,6 +59,7 @@ npm run dev
 | Capa | Tecnología |
 |---|---|
 | Frontend (cliente y admin) | React 19 + Vite |
+| App móvil | React Native + Expo |
 | Estilos | Tailwind CSS |
 | Enrutamiento | React Router DOM |
 | Iconos | lucide-react, react-icons |
@@ -82,6 +89,11 @@ npm run dev
 - Gestión (crear, editar, eliminar, visualizar) de productos, categorías, marcas, clientes, pedidos, códigos de descuento, campañas de marketing y administradores.
 - Dashboard con estadísticas y gráficos.
 - Acceso restringido: todas las secciones, salvo el login, requieren una sesión de administrador activa (protegida tanto en frontend como en el backend).
+
+**App móvil (cliente):**
+- Mismas funcionalidades de catálogo, autenticación, carrito y perfil que la tienda web, adaptadas a React Native + Expo.
+- Checkout con pago con tarjeta a través de la integración de pruebas (sandbox) de Wompi El Salvador, en vez del pago simulado de la tienda web.
+- Ver [`elaris-de-elite-mobile/mobileApp/README.md`](./elaris-de-elite-mobile/mobileApp/README.md) para el detalle completo.
 
 ---
 

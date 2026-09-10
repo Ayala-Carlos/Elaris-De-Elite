@@ -36,6 +36,12 @@ registerCustomerController.register = async (req, res) => {
     loyaltyPoints,
     loginAttempts,
     timeOut,
+    // País, estado, ciudad y dirección se capturan en el registro de la app
+    // móvil para completar el perfil del cliente (customer.js es strict:false).
+    country,
+    state,
+    city,
+    address,
   } = req.body;
 
   try {
@@ -67,6 +73,10 @@ registerCustomerController.register = async (req, res) => {
         loyaltyPoints,
         loginAttempts,
         timeOut,
+        country,
+        state,
+        city,
+        address,
       },
       //#2- Secret key
       config.JWT.secret,
@@ -148,6 +158,10 @@ registerCustomerController.verifyCode = async (req, res) => {
       birthdate,
       password: passwordHash,
       isVerified,
+      country,
+      state,
+      city,
+      address,
     } = decoded;
 
     //Paso final: comparar el código que el usuario escribe
@@ -173,6 +187,10 @@ registerCustomerController.verifyCode = async (req, res) => {
       loyaltyPoints,
       loginAttempts,
       timeOut,
+      country,
+      state,
+      city,
+      address,
     });
 
     //Guardamos todo en la base de datos
