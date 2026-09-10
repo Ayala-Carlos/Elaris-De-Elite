@@ -241,7 +241,7 @@ export const CarritoPantalla = ({ navigation }) => {
               <View style={estilos.avisoPrueba}>
                 <Ionicons name="flask-outline" size={16} color={colores.primarioOscuro} />
                 <Text style={estilos.textoAvisoPrueba}>
-                  Modo de prueba (Wompi Sandbox): no se realiza ningún cobro real.
+                  Modo de prueba: no se realiza ningún cobro real.
                 </Text>
               </View>
 

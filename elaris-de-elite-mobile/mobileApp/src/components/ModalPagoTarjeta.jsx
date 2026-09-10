@@ -69,7 +69,7 @@ export const ModalPagoTarjeta = ({ visible, total, cargando, onCerrar, onConfirm
             <View style={estilos.franjaAviso}>
               <Ionicons name="shield-checkmark-outline" size={16} color={colores.primarioOscuro} />
               <Text style={estilos.aviso}>
-                Este es el ambiente de pruebas (sandbox) de Wompi: ningún dato de tarjeta
+                Este es el ambiente de pruebas: ningún dato de tarjeta
                 que ingreses aquí genera un cobro real, sin importar qué número escribas.
               </Text>
             </View>

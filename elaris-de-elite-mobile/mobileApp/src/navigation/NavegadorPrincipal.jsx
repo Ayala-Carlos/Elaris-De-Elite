@@ -1,9 +1,9 @@
-import { ActivityIndicator, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 
+import { PantallaCarga } from "../components/PantallaCarga.jsx";
 import { useAutenticacion } from "../hooks/useAutenticacion.js";
 import { colores } from "../theme/colores.js";
 import { VerificarCodigoPantalla } from "../screens/VerificarCodigoPantalla.jsx";
@@ -59,19 +59,11 @@ const PestanasPrincipales = () => (
 export const NavegadorPrincipal = () => {
   const { haIniciadoSesion, cargando } = useAutenticacion();
 
+  // Pantalla de carga adicional al Splash Screen nativo (app.json): se ve
+  // mientras se revisa si hay una sesión de cliente guardada en el
+  // dispositivo (ver ProveedorAutenticacion en ContextoAutenticacion.jsx).
   if (cargando) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: colores.fondo,
-        }}
-      >
-        <ActivityIndicator color={colores.primario} />
-      </View>
-    );
+    return <PantallaCarga />;
   }
 
   return (
