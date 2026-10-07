@@ -18,6 +18,7 @@ import loginAdminRoutes from './src/routes/loginAdmin.js';
 import registerAdminRoutes from './src/routes/registerAdmin.js';
 import reviewsRoutes from './src/routes/reviews.js';
 import contactRoutes from './src/routes/contact.js';
+import wompiRoutes from './src/routes/wompi.js';
 //import limiter from './src/middlewares/limiter.js';
 
 import cors from 'cors'; 
@@ -29,7 +30,10 @@ const app = express();
 
 //Use cors is for allow cross-origin requests, which is necessary when the frontend and backend are hosted on different domains or ports. It enables the frontend to make API calls to the backend without being blocked by the browser's same-origin policy.
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'], // Permite el admin (5174) y el cliente (5173)
+    // Admin (5174), cliente web (5173) y la app móvil corriendo con "expo start --web"
+    // (Metro sirve por defecto en 8081; Expo Go clásico usaba 19006). En nativo
+    // (Android/iOS) no aplica CORS, así que no hace falta agregar nada ahí.
+    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:8081', 'http://localhost:19006'],
     //Allows the sending of cookies and other credentials in cross-origin requests, which is necessary for authentication and session management.
     credentials: true
 }));
@@ -60,5 +64,7 @@ app.use('/api/loginAdmin', loginAdminRoutes);
 app.use('/api/registerAdmin', registerAdminRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/contact', contactRoutes);
+app.use("/api/wompi", wompiRoutes)
+
 
 export default app;

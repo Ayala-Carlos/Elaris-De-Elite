@@ -64,6 +64,8 @@ customersController.updateCustomer = async (req, res) => {
         timeOut,
         loyaltyPoints,
         country,
+        state,
+        city,
         address,
     } = req.body;
 
@@ -121,10 +123,12 @@ customersController.updateCustomer = async (req, res) => {
       updatePayload.password = await bcryptjs.hash(password, 10);
     }
 
-    // country/address are not part of the original schema fields above, but the
+    // country/state/city/address are not part of the original schema fields above, but the
     // model is strict:false, so we only include them when the client sends them
     // (used by the mobile app's profile screen).
     if (country !== undefined) updatePayload.country = country;
+    if (state !== undefined) updatePayload.state = state;
+    if (city !== undefined) updatePayload.city = city;
     if (address !== undefined) updatePayload.address = address;
 
     //Actualizaciones

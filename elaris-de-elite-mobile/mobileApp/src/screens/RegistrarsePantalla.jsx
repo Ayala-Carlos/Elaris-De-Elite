@@ -74,11 +74,9 @@ export const RegistrarsePantalla = ({ navigation }) => {
         phoneNumber: datos.telefono.trim(),
         birthdate: datos.fechaNacimiento.trim(),
         country: datos.pais.trim(),
-        // El backend guarda la dirección como un solo texto.
-        address: [datos.direccion, datos.ciudad, datos.estado]
-          .map((parte) => parte.trim())
-          .filter(Boolean)
-          .join(", "),
+        state: datos.estado.trim(),
+        city: datos.ciudad.trim(),
+        address: datos.direccion.trim(),
       });
       Alert.alert(
         "Revisa tu correo",
@@ -181,6 +179,14 @@ export const RegistrarsePantalla = ({ navigation }) => {
             Registrarse
           </Boton>
 
+          <Text style={estilos.avisoTerminos}>
+            Al registrarte, aceptas nuestros{" "}
+            <Text style={estilos.enlaceTerminos} onPress={() => navigation.navigate("Terminos")}>
+              términos y condiciones
+            </Text>
+            .
+          </Text>
+
           <Text style={estilos.enlaceVolver} onPress={() => navigation.goBack()}>
             ← Volver al inicio
           </Text>
@@ -198,7 +204,14 @@ const estilos = StyleSheet.create({
   subtitulo: { fontSize: 13, color: colores.textoClaro, marginTop: 4 },
   filaDoble: { flexDirection: "row", justifyContent: "space-between" },
   mitad: { width: "48%" },
-  espacioBoton: { marginTop: 8, marginBottom: 18 },
+  espacioBoton: { marginTop: 8, marginBottom: 14 },
+  avisoTerminos: {
+    textAlign: "center",
+    fontSize: 11,
+    color: colores.textoClaro,
+    marginBottom: 18,
+  },
+  enlaceTerminos: { color: colores.primario, fontWeight: "700" },
   enlaceVolver: { textAlign: "center", fontSize: 13, color: colores.textoClaro },
 });
 

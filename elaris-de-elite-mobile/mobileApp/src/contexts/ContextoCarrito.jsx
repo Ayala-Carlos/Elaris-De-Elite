@@ -183,9 +183,11 @@ export const ProveedorCarrito = ({ children }) => {
   );
 
   // Crea el pedido a partir del carrito actual y lo marca como completado
-  // (no se elimina, porque el pedido guarda una referencia a él).
+  // (no se elimina, porque el pedido guarda una referencia a él). "pago" es
+  // el resultado de la transacción aprobada por Wompi (ver servicioPagos.js),
+  // y se guarda junto al pedido como comprobante.
   const pagarPedido = useCallback(
-    async (direccion) => {
+    async (direccion, pago) => {
       if (!carrito?._id || !carrito.products?.length) {
         throw new Error("El carrito está vacío");
       }
@@ -200,6 +202,8 @@ export const ProveedorCarrito = ({ children }) => {
             paymentMethod: "card",
             paymentStatus: "paid",
             paymentDate: new Date().toISOString(),
+            transactionId: pago?.idTransaccion,
+            authorizationCode: pago?.codigoAutorizacion,
           },
         ],
       });

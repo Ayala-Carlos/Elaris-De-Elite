@@ -15,8 +15,10 @@ import { Boton } from "../components/Boton.jsx";
 import { EncabezadoInicio } from "../components/EncabezadoInicio.jsx";
 import { ItemCarrito } from "../components/ItemCarrito.jsx";
 import { MenuDesplegable } from "../components/MenuDesplegable.jsx";
+import { ModalPagoTarjeta } from "../components/ModalPagoTarjeta.jsx";
 import { useAutenticacion } from "../hooks/useAutenticacion.js";
 import { useCarrito } from "../hooks/useCarrito.js";
+import { servicioPagos } from "../services/servicioPagos.js";
 import { colores } from "../theme/colores.js";
 
 // Envío gratis a partir de este monto y tasa de IVA usadas solo para
@@ -44,6 +46,7 @@ export const CarritoPantalla = ({ navigation }) => {
   const [codigo, setCodigo] = useState("");
   const [aplicandoCodigo, setAplicandoCodigo] = useState(false);
   const [pagando, setPagando] = useState(false);
+  const [modalPagoVisible, setModalPagoVisible] = useState(false);
 
   const baseConDescuento = Math.max(subtotal - montoDescuento, 0);
   const envio = baseConDescuento >= ENVIO_GRATIS_DESDE || baseConDescuento === 0 ? 0 : COSTO_ENVIO;
@@ -73,7 +76,7 @@ export const CarritoPantalla = ({ navigation }) => {
     }
   };
 
-  const manejarPagar = async () => {
+  const manejarPagar = () => {
     if (!cliente?.country || !cliente?.address) {
       Alert.alert(
         "Completa tu dirección",
@@ -85,13 +88,40 @@ export const CarritoPantalla = ({ navigation }) => {
       );
       return;
     }
+    setModalPagoVisible(true);
+  };
 
+  // Se llama al confirmar la tarjeta en el modal de pago: primero cobra con
+  // Wompi (sandbox) y, solo si la transacción es aprobada, crea el pedido.
+  const manejarConfirmarPago = async (tarjeta) => {
     setPagando(true);
     try {
-      await pagarPedido({ country: cliente.country, detailedAddress: cliente.address });
-      Alert.alert("Pedido realizado", "Tu pedido se procesó correctamente.", [
-        { text: "Ver mis pedidos", onPress: () => navigation.navigate("Pedidos") },
-      ]);
+      const pago = await servicioPagos.pagarConTarjeta({
+        monto: total,
+        emailCliente: cliente.email,
+        nombreCliente: cliente.name,
+        tarjeta,
+      });
+
+      await pagarPedido(
+        {
+          country: cliente.country,
+          state: cliente.state,
+          city: cliente.city,
+          detailedAddress: cliente.address,
+        },
+        pago,
+      );
+
+      setModalPagoVisible(false);
+      Alert.alert(
+        "Pedido realizado (pago de prueba)",
+        `${
+          pago?.mensaje ||
+          "Tu pago de prueba se procesó correctamente con Wompi. No se realizó ningún cobro real."
+        }\n\nTe enviamos un comprobante de pago (de prueba) a tu correo: ${cliente.email}.`,
+        [{ text: "Ver mis pedidos", onPress: () => navigation.navigate("Pedidos") }],
+      );
     } catch (error) {
       Alert.alert("No se pudo procesar el pago", error.message);
     } finally {
@@ -110,6 +140,13 @@ export const CarritoPantalla = ({ navigation }) => {
         visible={menuVisible}
         onCerrar={() => setMenuVisible(false)}
         navigation={navigation}
+      />
+      <ModalPagoTarjeta
+        visible={modalPagoVisible}
+        total={total}
+        cargando={pagando}
+        onCerrar={() => setModalPagoVisible(false)}
+        onConfirmar={manejarConfirmarPago}
       />
 
       <FlatList
@@ -217,13 +254,28 @@ export const CarritoPantalla = ({ navigation }) => {
                 </Boton>
               </View>
 
+              <View style={estilos.avisoPrueba}>
+                <Ionicons name="flask-outline" size={16} color={colores.primarioOscuro} />
+                <Text style={estilos.textoAvisoPrueba}>
+                  Modo de prueba: no se realiza ningún cobro real.
+                </Text>
+              </View>
+
               <Boton
-                estilo={{ marginTop: 20 }}
+                estilo={{ marginTop: 12 }}
                 cargando={pagando}
                 onPress={manejarPagar}
               >
-                Proceder con pago
+                Proceder con pago de prueba
               </Boton>
+
+              <Text style={estilos.avisoTerminos}>
+                Al continuar, aceptas nuestros{" "}
+                <Text style={estilos.enlaceTerminos} onPress={() => navigation.navigate("Terminos")}>
+                  términos y condiciones
+                </Text>
+                .
+              </Text>
               <Boton
                 tipo="secundario"
                 estilo={{ marginTop: 10 }}
@@ -280,6 +332,22 @@ const estilos = StyleSheet.create({
     padding: 16,
   },
   tituloResumen: { fontSize: 15, fontWeight: "700", color: colores.texto, marginBottom: 12 },
+  avisoPrueba: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colores.fondoCampo,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    marginTop: 20,
+  },
+  textoAvisoPrueba: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 11,
+    fontWeight: "600",
+    color: colores.primarioOscuro,
+  },
   filaResumen: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -303,6 +371,13 @@ const estilos = StyleSheet.create({
     marginRight: 10,
   },
   botonCodigo: { paddingHorizontal: 18, paddingVertical: 10 },
+  avisoTerminos: {
+    textAlign: "center",
+    fontSize: 11,
+    color: colores.textoClaro,
+    marginTop: 10,
+  },
+  enlaceTerminos: { color: colores.primario, fontWeight: "700" },
   beneficios: { marginTop: 22 },
   filaBeneficio: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
   textoBeneficio: { marginLeft: 8, fontSize: 12, color: colores.textoClaro, flexShrink: 1 },
