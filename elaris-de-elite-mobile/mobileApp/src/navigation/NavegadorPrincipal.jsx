@@ -12,7 +12,6 @@ import { BienvenidaPantalla } from "../screens/BienvenidaPantalla.jsx";
 import { IniciarSesionPantalla } from "../screens/IniciarSesionPantalla.jsx";
 import { RegistrarsePantalla } from "../screens/RegistrarsePantalla.jsx";
 import { RecuperarContrasenaPantalla } from "../screens/RecuperarContrasenaPantalla.jsx";
-import { VerificarCodigoPantalla } from "../screens/VerificarCodigoPantalla.jsx";
 import { InicioPantalla } from "../screens/InicioPantalla.jsx";
 import { ProductosPantalla } from "../screens/ProductosPantalla.jsx";
 import { CarritoPantalla } from "../screens/CarritoPantalla.jsx";
