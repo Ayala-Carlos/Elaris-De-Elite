@@ -17,6 +17,9 @@ router
   .route("/customer/:customerId")
   .get(customerAuth, ordersController.getOrdersByCustomer);
 
+// (api/orders/:id/cancel) - the customer cancels their own pending order
+router.route("/:id/cancel").put(customerAuth, ordersController.cancelOrder);
+
 // (api/orders/:id)
 router
   .route("/:id")

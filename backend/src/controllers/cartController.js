@@ -16,6 +16,27 @@ import productsModel from "../models/products.js";
 
 const cartController = {};
 
+// Validates one cart line against the DB: product exists, quantity is a positive
+// integer and it does not exceed the available stock.
+// Returns { error: { status, message } } or { product }.
+const validateCartLine = async (productId, quantity, checkStock = true) => {
+  const product = await productsModel.findById(productId);
+  if (!product) {
+    return { error: { status: 404, message: `Product with ID ${productId} not found` } };
+  }
+  if (!Number.isInteger(quantity) || quantity < 1) {
+    return { error: { status: 400, message: `La cantidad de "${product.name}" debe ser un entero mayor a 0.` } };
+  }
+  if (checkStock && quantity > product.stock) {
+    const message =
+      product.stock > 0
+        ? `Solo hay ${product.stock} unidades disponibles de "${product.name}".`
+        : `"${product.name}" está agotado.`;
+    return { error: { status: 400, message } };
+  }
+  return { product };
+};
+
 //Select
 cartController.getAllCarts = async (req, res) => {
   try {
@@ -24,7 +45,7 @@ cartController.getAllCarts = async (req, res) => {
     const carts = await cartModel
       .find()
       .populate("customerId", "name email phoneNumber") // This populates the customerId field in the cart documents with the name, email, pho fields from the Customers collection. It allows to retrieve the customer's name and email along with the cart information in a single query.
-      .populate("products.productId", "name price images"); // This populates the productId field in the products array of the cart documents with the name and price fields from the Products collection. It allows to retrieve the product's name and price along with the cart information in a single query.
+      .populate("products.productId", "name price stock images"); // This populates the productId field in the products array of the cart documents with the name and price fields from the Products collection. It allows to retrieve the product's name and price along with the cart information in a single query.
 
     return res.status(200).json(carts);
   } catch (error) {
@@ -41,7 +62,7 @@ cartController.getCartById = async (req, res) => {
       .populate("customerId", "name email phoneNumber")
       .populate({
         path: "products.productId",
-        select: "name price images idCategory",
+        select: "name price stock images idCategory",
         populate: { path: "idCategory", select: "name" },
       });
     //.populate("customerId", "-password") The populate will exclude the password
@@ -77,7 +98,7 @@ cartController.getCartByCustomer = async (req, res) => {
       .populate("customerId", "name email phoneNumber")
       .populate({
         path: "products.productId",
-        select: "name price images idCategory",
+        select: "name price stock images idCategory",
         populate: { path: "idCategory", select: "name" },
       });
 
@@ -118,7 +139,13 @@ cartController.createCart = async (req, res) => {
     //We use a for loop because we need to make asynchronous calls to the database to get the price of each product, and forEach does not work well with asynchronous code.
     for (let i = 0; i < products.length; i++) {
       //Search the product in the database
-      const productsFound = await productsModel.findById(products[i].productId); //products[i].productId is the id of the product that we receive from the frontend in the products array
+      const { error, product: productsFound } = await validateCartLine(
+        products[i].productId,
+        products[i].quantity,
+      );
+      if (error) {
+        return res.status(error.status).json({ message: error.message });
+      }
 
       //Calculate the subtotal
       const subtotal = productsFound.price * products[i].quantity; //productsFound.price is the price of the product that we get from the database, and products[i].quantity is the quantity of the product that we receive from the frontend in the products array
@@ -197,15 +224,14 @@ cartController.updateCart = async (req, res) => {
     let newProducts = [];
 
     for (let i = 0; i < products.length; i++) {
-      const productsFound = await productsModel.findById(products[i].productId); // Search the product in the database to get the price and calculate the subtotal
-
-      if (!productsFound) {
-        return res.status(404).json({
-          message: `Product with ID ${products[i].productId} not found`,
-        });
+      const { error, product: productsFound } = await validateCartLine(
+        products[i].productId,
+        products[i].quantity,
+        status !== "completed", // a cart being closed after checkout was already validated (and its stock discounted) when the order was created
+      );
+      if (error) {
+        return res.status(error.status).json({ message: error.message });
       }
-
-      console.log(productsFound);
 
       //Calculate the subtotal
       const subtotal = productsFound.price * products[i].quantity; // productsFound.price is the price of the product that we get from the database, and products[i].quantity is the quantity of the product that we receive from the frontend in the products array

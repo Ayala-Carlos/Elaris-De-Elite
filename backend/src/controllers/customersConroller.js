@@ -81,7 +81,7 @@ customersController.updateCustomer = async (req, res) => {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    if(name.length < 3 || name.length > 15){
+    if(name.length < 3 || name.length > 50){
         return res.status(400).json({ message: "Invalid name" });
     }
 

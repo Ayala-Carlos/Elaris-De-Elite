@@ -31,6 +31,9 @@ registerCustomerController.register = async (req, res) => {
     email,
     phoneNumber,
     password,
+    birthdate,
+    country,
+    address,
     accountStatus,
     isActive,
     loyaltyPoints,
@@ -39,6 +42,32 @@ registerCustomerController.register = async (req, res) => {
   } = req.body;
 
   try {
+    //Validaciones de los datos recibidos
+    if (!name?.trim() || !email?.trim() || !password) {
+      return res.status(400).json({ message: "Nombre, correo y contraseña son obligatorios" });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: "Correo electrónico inválido" });
+    }
+    if (password.length < 8 || password.length > 20) {
+      return res.status(400).json({ message: "La contraseña debe tener entre 8 y 20 caracteres" });
+    }
+    if (phoneNumber && !/^\d{10}$/.test(String(phoneNumber))) {
+      return res.status(400).json({ message: "Número de teléfono inválido (deben ser 10 dígitos)" });
+    }
+    if (birthdate) {
+      const born = new Date(birthdate);
+      if (isNaN(born.getTime()) || born > new Date()) {
+        return res.status(400).json({ message: "Fecha de nacimiento inválida" });
+      }
+      const now = new Date();
+      let age = now.getFullYear() - born.getFullYear();
+      if (now < new Date(now.getFullYear(), born.getMonth(), born.getDate())) age--;
+      if (age < 18 || age > 100) {
+        return res.status(400).json({ message: "Debes tener entre 18 y 100 años para registrarte" });
+      }
+    }
+
     //Verificar si el cliente ya existe
     const existCustomer = await customerModel.findOne({ email });
     if (existCustomer) {
@@ -61,6 +90,9 @@ registerCustomerController.register = async (req, res) => {
         phoneNumber,
         email,
         password: passwordHash,
+        birthdate,
+        country,
+        address,
         accountStatus,
         verificationCode,
         isActive,
@@ -146,6 +178,8 @@ registerCustomerController.verifyCode = async (req, res) => {
       timeOut,
       lastName,
       birthdate,
+      country,
+      address,
       password: passwordHash,
       isVerified,
     } = decoded;
@@ -167,6 +201,9 @@ registerCustomerController.verifyCode = async (req, res) => {
       phoneNumber,
       email,
       password: passwordHash,
+      birthdate,
+      country,
+      address,
       isVerified: true,
       accountStatus,
       isActive,

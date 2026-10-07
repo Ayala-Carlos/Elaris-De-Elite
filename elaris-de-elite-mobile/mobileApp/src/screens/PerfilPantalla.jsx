@@ -8,6 +8,23 @@ import { FilaPerfilEditable } from "../components/FilaPerfilEditable.jsx";
 import { MenuDesplegable } from "../components/MenuDesplegable.jsx";
 import { useAutenticacion } from "../hooks/useAutenticacion.js";
 import { colores } from "../theme/colores.js";
+import {
+  validarCampoObligatorio,
+  validarContrasena,
+  validarCorreo,
+  validarNombre,
+  validarTelefono,
+} from "../utils/validaciones.js";
+
+// Validación de cada campo editable del perfil antes de enviarlo al backend.
+const VALIDADORES_PERFIL = {
+  name: validarNombre,
+  email: validarCorreo,
+  phoneNumber: (valor) => validarTelefono(valor, { obligatorio: true }),
+  password: validarContrasena,
+  country: (valor) => validarCampoObligatorio(valor, "El país"),
+  address: (valor) => validarCampoObligatorio(valor, "La dirección"),
+};
 
 // Pantalla de perfil del cliente autenticado: información personal
 // editable campo por campo y botón para cerrar sesión.
@@ -16,8 +33,10 @@ export const PerfilPantalla = ({ navigation }) => {
   const [menuVisible, setMenuVisible] = useState(false);
 
   const guardarCampo = async (campo, valor) => {
-    if ((campo === "name" || campo === "email") && !valor) {
-      throw new Error("Este campo no puede quedar vacío");
+    const errorValidacion = VALIDADORES_PERFIL[campo]?.(valor);
+    if (errorValidacion) {
+      Alert.alert("Dato inválido", errorValidacion);
+      throw new Error(errorValidacion);
     }
     try {
       await actualizarCliente({ [campo]: valor });

@@ -5,6 +5,7 @@ import { Boton } from "../components/Boton.jsx";
 import { CampoTexto } from "../components/CampoTexto.jsx";
 import { useAutenticacion } from "../hooks/useAutenticacion.js";
 import { colores } from "../theme/colores.js";
+import { validarCodigo, validarContrasena, validarCorreo } from "../utils/validaciones.js";
 
 const PASOS = { CORREO: "correo", CODIGO: "codigo", NUEVA_CONTRASENA: "nuevaContrasena" };
 
@@ -19,12 +20,17 @@ export const RecuperarContrasenaPantalla = ({ navigation }) => {
   const [codigo, setCodigo] = useState("");
   const [nuevaContrasena, setNuevaContrasena] = useState("");
   const [confirmarContrasena, setConfirmarContrasena] = useState("");
+  const [errores, setErrores] = useState({});
   const [enviando, setEnviando] = useState(false);
 
   const solicitarCodigo = async () => {
+    const errorCorreo = validarCorreo(correo);
+    setErrores({ correo: errorCorreo });
+    if (errorCorreo) return;
+
     setEnviando(true);
     try {
-      await solicitarCodigoRecuperacion(correo);
+      await solicitarCodigoRecuperacion(correo.trim());
       setPaso(PASOS.CODIGO);
     } catch (error) {
       Alert.alert("No se pudo enviar el código", error.message);
@@ -34,9 +40,13 @@ export const RecuperarContrasenaPantalla = ({ navigation }) => {
   };
 
   const confirmarCodigo = async () => {
+    const errorCodigo = validarCodigo(codigo);
+    setErrores({ codigo: errorCodigo });
+    if (errorCodigo) return;
+
     setEnviando(true);
     try {
-      await verificarCodigoRecuperacion(codigo);
+      await verificarCodigoRecuperacion(codigo.trim());
       setPaso(PASOS.NUEVA_CONTRASENA);
     } catch (error) {
       Alert.alert("Código incorrecto", error.message);
@@ -46,10 +56,17 @@ export const RecuperarContrasenaPantalla = ({ navigation }) => {
   };
 
   const guardarNuevaContrasena = async () => {
-    if (nuevaContrasena !== confirmarContrasena) {
-      Alert.alert("Las contraseñas no coinciden");
-      return;
+    const nuevosErrores = {};
+    const errorContrasena = validarContrasena(nuevaContrasena);
+    if (errorContrasena) nuevosErrores.nuevaContrasena = errorContrasena;
+    if (!confirmarContrasena) {
+      nuevosErrores.confirmarContrasena = "Confirma tu contraseña";
+    } else if (nuevaContrasena !== confirmarContrasena) {
+      nuevosErrores.confirmarContrasena = "Las contraseñas no coinciden";
     }
+    setErrores(nuevosErrores);
+    if (Object.keys(nuevosErrores).length > 0) return;
+
     setEnviando(true);
     try {
       await restablecerContrasena(nuevaContrasena, confirmarContrasena);
@@ -77,6 +94,7 @@ export const RecuperarContrasenaPantalla = ({ navigation }) => {
               valor={correo}
               onCambiar={setCorreo}
               tipoTeclado="email-address"
+              error={errores.correo}
             />
             <Boton cargando={enviando} onPress={solicitarCodigo}>
               Enviar código
@@ -87,7 +105,12 @@ export const RecuperarContrasenaPantalla = ({ navigation }) => {
         {paso === PASOS.CODIGO && (
           <View>
             <Text style={estilos.subtitulo}>Ingresa el código que enviamos a tu correo.</Text>
-            <CampoTexto etiqueta="Código de verificación" valor={codigo} onCambiar={setCodigo} />
+            <CampoTexto
+              etiqueta="Código de verificación"
+              valor={codigo}
+              onCambiar={setCodigo}
+              error={errores.codigo}
+            />
             <Boton cargando={enviando} onPress={confirmarCodigo}>
               Verificar código
             </Boton>
@@ -102,12 +125,14 @@ export const RecuperarContrasenaPantalla = ({ navigation }) => {
               valor={nuevaContrasena}
               onCambiar={setNuevaContrasena}
               secreto
+              error={errores.nuevaContrasena}
             />
             <CampoTexto
               etiqueta="Confirmar contraseña"
               valor={confirmarContrasena}
               onCambiar={setConfirmarContrasena}
               secreto
+              error={errores.confirmarContrasena}
             />
             <Boton cargando={enviando} onPress={guardarNuevaContrasena}>
               Guardar nueva contraseña

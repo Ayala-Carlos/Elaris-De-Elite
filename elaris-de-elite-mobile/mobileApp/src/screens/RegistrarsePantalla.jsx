@@ -14,15 +14,20 @@ import { CampoTexto } from "../components/CampoTexto.jsx";
 import { Logo } from "../components/Logo.jsx";
 import { useAutenticacion } from "../hooks/useAutenticacion.js";
 import { colores } from "../theme/colores.js";
-
-const validarCorreo = (correo) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
-const validarTelefono = (telefono) => /^\d{7,15}$/.test(telefono.replace(/\s/g, ""));
+import {
+  validarContrasena,
+  validarCorreo,
+  validarFechaNacimiento,
+  validarNombre,
+  validarTelefono,
+} from "../utils/validaciones.js";
 
 const DATOS_INICIALES = {
   nombreCompleto: "",
   correo: "",
   contrasena: "",
   telefono: "",
+  fechaNacimiento: "",
   pais: "",
   estado: "",
   ciudad: "",
@@ -42,12 +47,18 @@ export const RegistrarsePantalla = ({ navigation }) => {
 
   const validar = () => {
     const nuevosErrores = {};
-    if (!datos.nombreCompleto.trim()) nuevosErrores.nombreCompleto = "El nombre es obligatorio";
-    if (!validarCorreo(datos.correo)) nuevosErrores.correo = "Correo electrónico inválido";
-    if (!datos.contrasena || datos.contrasena.length < 8)
-      nuevosErrores.contrasena = "Mínimo 8 caracteres";
-    if (datos.telefono && !validarTelefono(datos.telefono))
-      nuevosErrores.telefono = "Número de teléfono inválido";
+    const errorNombre = validarNombre(datos.nombreCompleto);
+    if (errorNombre) nuevosErrores.nombreCompleto = errorNombre;
+    const errorCorreo = validarCorreo(datos.correo);
+    if (errorCorreo) nuevosErrores.correo = errorCorreo;
+    const errorContrasena = validarContrasena(datos.contrasena);
+    if (errorContrasena) nuevosErrores.contrasena = errorContrasena;
+    const errorTelefono = validarTelefono(datos.telefono, { obligatorio: true });
+    if (errorTelefono) nuevosErrores.telefono = errorTelefono;
+    const errorFecha = validarFechaNacimiento(datos.fechaNacimiento);
+    if (errorFecha) nuevosErrores.fechaNacimiento = errorFecha;
+    if (!datos.pais.trim()) nuevosErrores.pais = "El país es obligatorio";
+    if (!datos.direccion.trim()) nuevosErrores.direccion = "La dirección es obligatoria";
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
   };
@@ -60,19 +71,20 @@ export const RegistrarsePantalla = ({ navigation }) => {
         name: datos.nombreCompleto.trim(),
         email: datos.correo.trim(),
         password: datos.contrasena,
-        phoneNumber: datos.telefono,
-        // País, estado, ciudad y dirección se capturan en el formulario
-        // para completar el perfil del cliente en el futuro.
-        pais: datos.pais,
-        estado: datos.estado,
-        ciudad: datos.ciudad,
-        direccion: datos.direccion,
+        phoneNumber: datos.telefono.trim(),
+        birthdate: datos.fechaNacimiento.trim(),
+        country: datos.pais.trim(),
+        // El backend guarda la dirección como un solo texto.
+        address: [datos.direccion, datos.ciudad, datos.estado]
+          .map((parte) => parte.trim())
+          .filter(Boolean)
+          .join(", "),
       });
       Alert.alert(
         "Revisa tu correo",
         "Te enviamos un código de verificación para activar tu cuenta.",
       );
-      navigation.navigate("IniciarSesion");
+      navigation.navigate("VerificarCodigo", { correo: datos.correo.trim() });
     } catch (error) {
       Alert.alert("No se pudo completar el registro", error.message);
     } finally {
@@ -121,17 +133,28 @@ export const RegistrarsePantalla = ({ navigation }) => {
               etiqueta="N. teléfono"
               valor={datos.telefono}
               onCambiar={actualizarCampo("telefono")}
+              marcador="10 dígitos"
               tipoTeclado="phone-pad"
               error={errores.telefono}
               estilo={estilos.mitad}
             />
           </View>
 
+          <CampoTexto
+            etiqueta="Fecha de nacimiento"
+            valor={datos.fechaNacimiento}
+            onCambiar={actualizarCampo("fechaNacimiento")}
+            marcador="AAAA-MM-DD"
+            tipoTeclado="numbers-and-punctuation"
+            error={errores.fechaNacimiento}
+          />
+
           <View style={estilos.filaDoble}>
             <CampoTexto
               etiqueta="País"
               valor={datos.pais}
               onCambiar={actualizarCampo("pais")}
+              error={errores.pais}
               estilo={estilos.mitad}
             />
             <CampoTexto
@@ -151,6 +174,7 @@ export const RegistrarsePantalla = ({ navigation }) => {
             etiqueta="Dirección"
             valor={datos.direccion}
             onCambiar={actualizarCampo("direccion")}
+            error={errores.direccion}
           />
 
           <Boton estilo={estilos.espacioBoton} cargando={enviando} onPress={manejarRegistro}>

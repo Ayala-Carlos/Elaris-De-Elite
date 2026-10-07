@@ -50,6 +50,16 @@ export const CarritoPantalla = ({ navigation }) => {
   const iva = baseConDescuento * TASA_IVA;
   const total = baseConDescuento + envio + iva;
 
+  // Ejecuta un cambio en el carrito y muestra el motivo si el backend lo rechaza
+  // (por ejemplo, cuando la cantidad pedida supera el stock disponible).
+  const manejarCambioCarrito = async (accion) => {
+    try {
+      await accion();
+    } catch (error) {
+      Alert.alert("No se pudo actualizar el carrito", error.message);
+    }
+  };
+
   const manejarAplicarCodigo = async () => {
     if (!codigo.trim()) return;
     setAplicandoCodigo(true);
@@ -130,9 +140,13 @@ export const CarritoPantalla = ({ navigation }) => {
           <ItemCarrito
             item={item}
             onCambiarCantidad={(cantidad) =>
-              actualizarCantidad(item.productId?._id || item.productId, cantidad)
+              manejarCambioCarrito(() =>
+                actualizarCantidad(item.productId?._id || item.productId, cantidad),
+              )
             }
-            onEliminar={() => eliminarProducto(item.productId?._id || item.productId)}
+            onEliminar={() =>
+              manejarCambioCarrito(() => eliminarProducto(item.productId?._id || item.productId))
+            }
           />
         )}
         ListEmptyComponent={

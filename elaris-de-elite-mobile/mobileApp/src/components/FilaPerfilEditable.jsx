@@ -34,6 +34,8 @@ export const FilaPerfilEditable = ({
       await onGuardar(borrador.trim());
       setEditando(false);
       setBorrador("");
+    } catch {
+      // El error ya se le mostró al usuario; se mantiene el campo abierto para corregirlo.
     } finally {
       setGuardando(false);
     }

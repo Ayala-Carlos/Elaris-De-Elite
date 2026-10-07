@@ -1,7 +1,30 @@
 import ordersModel from "../models/orders.js";
 import cartModel from "../models/cart.js";
+import productsModel from "../models/products.js";
 
 const ordersController = {};
+
+// Gives the stock of every product in a cart back to the inventory (used when an order is cancelled).
+const restockCart = async (cart) => {
+  for (const line of cart.products) {
+    await productsModel.findByIdAndUpdate(line.productId, { $inc: { stock: line.quantity } });
+  }
+};
+
+// Cancels an order and returns its products to the stock. Returns { error } or { order }.
+const cancelOrderAndRestock = async (order) => {
+  if (order.orderStatus === "cancelled") {
+    return { error: { status: 400, message: "El pedido ya fue cancelado" } };
+  }
+  if (order.orderStatus === "delivered") {
+    return { error: { status: 400, message: "Un pedido entregado no puede cancelarse" } };
+  }
+  const cart = await cartModel.findById(order.cartId);
+  if (cart) await restockCart(cart);
+  order.orderStatus = "cancelled";
+  await order.save();
+  return { order };
+};
 
 // Get all orders
 ordersController.getAllOrders = async (req, res) => {
@@ -97,6 +120,31 @@ ordersController.createOrder = async (req, res) => {
       return res.status(400).json({ message: "payment must be an array if provided" });
     }
 
+    if (!cart.products?.length) {
+      return res.status(400).json({ message: "El carrito está vacío" });
+    }
+
+    // A cart can only become one order (otherwise stock would be discounted twice)
+    const existingOrder = await ordersModel.findOne({ cartId });
+    if (existingOrder) {
+      return res.status(400).json({ message: "Este carrito ya tiene un pedido" });
+    }
+
+    // Final stock check right before discounting it
+    for (const line of cart.products) {
+      const product = await productsModel.findById(line.productId);
+      if (!product) {
+        return res.status(404).json({ message: "Uno de los productos ya no existe" });
+      }
+      if (line.quantity > product.stock) {
+        const message =
+          product.stock > 0
+            ? `Solo hay ${product.stock} unidades disponibles de "${product.name}".`
+            : `"${product.name}" está agotado.`;
+        return res.status(400).json({ message });
+      }
+    }
+
     const newOrder = new ordersModel({
       cartId,
       address,
@@ -106,6 +154,11 @@ ordersController.createOrder = async (req, res) => {
     });
 
     await newOrder.save();
+
+    // Discount the purchased units from the stock
+    for (const line of cart.products) {
+      await productsModel.findByIdAndUpdate(line.productId, { $inc: { stock: -line.quantity } });
+    }
 
     return res.status(201).json({ message: "Order created successfully" });
   } catch (error) {
@@ -136,6 +189,19 @@ ordersController.updateOrder = async (req, res) => {
       return res.status(400).json({ message: "payment must be an array if provided" });
     }
 
+    // Cancelling an order returns its products to the stock
+    if (orderStatus === "cancelled") {
+      const order = await ordersModel.findById(req.params.id);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      const { error } = await cancelOrderAndRestock(order);
+      if (error) {
+        return res.status(error.status).json({ message: error.message });
+      }
+      return res.status(200).json({ message: "Order cancelled successfully" });
+    }
+
     const update = {};
     if (cartId) update.cartId = cartId;
     if (address) update.address = address;
@@ -152,6 +218,31 @@ ordersController.updateOrder = async (req, res) => {
     return res.status(200).json({ message: "Order updated successfully" });
   } catch (error) {
     console.error("Error updating the order:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Cancel an order (customer): only the owner can cancel it, and only while it is pending
+ordersController.cancelOrder = async (req, res) => {
+  try {
+    const order = await ordersModel.findById(req.params.id).populate("cartId");
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+    if (order.cartId?.customerId?.toString() !== req.customer.id) {
+      return res.status(403).json({ message: "No autorizado" });
+    }
+    if (order.orderStatus !== "pending") {
+      return res.status(400).json({ message: "Solo se pueden cancelar pedidos pendientes" });
+    }
+    order.cartId = order.cartId._id;
+    const { error } = await cancelOrderAndRestock(order);
+    if (error) {
+      return res.status(error.status).json({ message: error.message });
+    }
+    return res.status(200).json({ message: "Order cancelled successfully" });
+  } catch (error) {
+    console.error("Error cancelling the order:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };

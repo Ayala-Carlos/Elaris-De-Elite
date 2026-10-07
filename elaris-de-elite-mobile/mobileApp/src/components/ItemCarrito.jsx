@@ -8,6 +8,9 @@ export const ItemCarrito = ({ item, onCambiarCantidad, onEliminar }) => {
   const producto = item.productId;
   const categoria = producto?.idCategory?.name;
   const imagen = producto?.images?.[0]?.image;
+  // No se puede pedir más unidades de las que hay en stock.
+  const alLimiteDeStock =
+    typeof producto?.stock === "number" && item.quantity >= producto.stock;
 
   return (
     <View style={estilos.fila}>
@@ -38,8 +41,9 @@ export const ItemCarrito = ({ item, onCambiarCantidad, onEliminar }) => {
             </Pressable>
             <Text style={estilos.cantidad}>{item.quantity}</Text>
             <Pressable
-              style={estilos.botonCantidad}
+              style={[estilos.botonCantidad, alLimiteDeStock && estilos.botonCantidadDeshabilitado]}
               onPress={() => onCambiarCantidad(item.quantity + 1)}
+              disabled={alLimiteDeStock}
               hitSlop={8}
             >
               <Ionicons name="add" size={14} color={colores.texto} />
@@ -91,6 +95,7 @@ const estilos = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  botonCantidadDeshabilitado: { opacity: 0.35 },
   cantidad: {
     marginHorizontal: 8,
     fontSize: 13,
