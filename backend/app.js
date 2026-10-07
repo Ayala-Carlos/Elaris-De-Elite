@@ -28,14 +28,25 @@ import cookieParser from 'cookie-parser';
 //Execute express
 const app = express();
 
-//Use cors is for allow cross-origin requests, which is necessary when the frontend and backend are hosted on different domains or ports. It enables the frontend to make API calls to the backend without being blocked by the browser's same-origin policy.
+// Opciones de orígenes permitidos
+const origenesPermitidos = [
+  'http://localhost:5173', 
+  'http://localhost:5174', 
+  'http://localhost:8081', 
+  'http://localhost:19006'
+];
+
 app.use(cors({
-    // Admin (5174), cliente web (5173) y la app móvil corriendo con "expo start --web"
-    // (Metro sirve por defecto en 8081; Expo Go clásico usaba 19006). En nativo
-    // (Android/iOS) no aplica CORS, así que no hace falta agregar nada ahí.
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:8081', 'http://localhost:19006'],
-    //Allows the sending of cookies and other credentials in cross-origin requests, which is necessary for authentication and session management.
-    credentials: true
+  origin: function (origin, callback) {
+    // Permite peticiones sin 'origin' (apps móviles nativas en Android/iOS, Postman, etc.)
+    // o si el origen está en la lista de desarrollo web
+    if (!origin || origenesPermitidos.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(null, true); // O callback(new Error('No permitido por CORS'))
+    }
+  },
+  credentials: true
 }));
  
 //Cookie parser allows us to parse the cookies sent by the client in the request headers and make them easily accessible in our route handlers.
