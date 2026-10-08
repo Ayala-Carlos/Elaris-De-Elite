@@ -11,50 +11,19 @@ const restockCart = async (cart) => {
   }
 };
 
-// Cancel an order (customer): only the owner can cancel it, while it is pending or in process
-ordersController.cancelOrder = async (req, res) => {
-  try {
-    // 1. Buscamos el pedido y populamos cartId para validar el propietario
-    const order = await ordersModel.findById(req.params.id).populate("cartId");
-    
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
-    // 2. Extraemos de forma segura el ID del cliente dueño del carrito
-    const ownerId = order.cartId?.customerId?._id?.toString() || order.cartId?.customerId?.toString();
-    
-    if (ownerId !== req.customer.id) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    // 3. Validamos que el estado permita cancelación (pending, in_process, etc.)
-    const estadosCancelables = ["pending", "in_process", "processing", "in_progress"];
-    if (!estadosCancelables.includes(order.orderStatus)) {
-      return res.status(400).json({ 
-        message: "Solo se pueden cancelar pedidos pendientes o en proceso" 
-      });
-    }
-
-    // 4. Guardamos la referencia al id del carrito antes de modificar el objeto
-    const cartIdRef = order.cartId._id || order.cartId;
-
-    // 5. Restockeamos productos del carrito directamente
-    const cart = await cartModel.findById(cartIdRef);
-    if (cart) {
-      await restockCart(cart);
-    }
-
-    // 6. Actualizamos el estado del pedido
-    order.cartId = cartIdRef;
-    order.orderStatus = "cancelled";
-    await order.save();
-
-    return res.status(200).json({ message: "Order cancelled successfully" });
-  } catch (error) {
-    console.error("Error cancelling the order:", error);
-    return res.status(500).json({ message: "Internal Server Error", error: error.message });
+// Cancels an order and returns its products to the stock. Returns { error } or { order }.
+const cancelOrderAndRestock = async (order) => {
+  if (order.orderStatus === "cancelled") {
+    return { error: { status: 400, message: "El pedido ya fue cancelado" } };
   }
+  if (order.orderStatus === "delivered") {
+    return { error: { status: 400, message: "Un pedido entregado no puede cancelarse" } };
+  }
+  const cart = await cartModel.findById(order.cartId);
+  if (cart) await restockCart(cart);
+  order.orderStatus = "cancelled";
+  await order.save();
+  return { order };
 };
 
 // Get all orders
