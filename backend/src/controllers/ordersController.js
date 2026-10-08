@@ -11,19 +11,33 @@ const restockCart = async (cart) => {
   }
 };
 
-// Cancels an order and returns its products to the stock. Returns { error } or { order }.
-const cancelOrderAndRestock = async (order) => {
-  if (order.orderStatus === "cancelled") {
-    return { error: { status: 400, message: "El pedido ya fue cancelado" } };
+// Cancel an order (customer): only the owner can cancel it, while it is pending or in process
+ordersController.cancelOrder = async (req, res) => {
+  try {
+    const order = await ordersModel.findById(req.params.id).populate("cartId");
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+    if (order.cartId?.customerId?.toString() !== req.customer.id) {
+      return res.status(403).json({ message: "No autorizado" });
+    }
+    
+    // Permitir cancelación tanto para estado 'pending' como 'in_process' / 'processing'
+    const estadosCancelables = ["pending", "in_process", "processing", "in_progress"];
+    if (!estadosCancelables.includes(order.orderStatus)) {
+      return res.status(400).json({ message: "Solo se pueden cancelar pedidos pendientes o en proceso" });
+    }
+
+    order.cartId = order.cartId._id;
+    const { error } = await cancelOrderAndRestock(order);
+    if (error) {
+      return res.status(error.status).json({ message: error.message });
+    }
+    return res.status(200).json({ message: "Order cancelled successfully" });
+  } catch (error) {
+    console.error("Error cancelling the order:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  if (order.orderStatus === "delivered") {
-    return { error: { status: 400, message: "Un pedido entregado no puede cancelarse" } };
-  }
-  const cart = await cartModel.findById(order.cartId);
-  if (cart) await restockCart(cart);
-  order.orderStatus = "cancelled";
-  await order.save();
-  return { order };
 };
 
 // Get all orders
