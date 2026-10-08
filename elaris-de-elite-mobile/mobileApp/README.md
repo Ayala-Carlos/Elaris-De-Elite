@@ -1,6 +1,19 @@
 # Élaris de Élite — App Móvil (Cliente)
 
-Aplicación móvil de la tienda, construida con **React Native + Expo**. Permite a los clientes navegar el catálogo, registrarse, iniciar sesión, comprar con carrito y pago con tarjeta (Wompi, en modo de pruebas), dejar reseñas y consultar su historial de pedidos, replicando las funcionalidades de la tienda en línea (`elaris-de-elite-client`).
+Aplicación móvil de la tienda, construida con **React Native + Expo**. Permite a los clientes navegar el catálogo, registrarse, iniciar sesión, comprar con carrito y pago con tarjeta (Wompi, en modo de pruebas) y consultar su historial de pedidos, replicando las funcionalidades de la tienda en línea (`elaris-de-elite-client`).
+
+## Integrantes
+
+- Andrea Alejandra Portillo Salegio
+- Mario Iván Vásquez Cruz
+- Josué Carlos Ayala Reyes
+- Julio Josué Pérez Rodríguez
+
+## Licencia
+
+Este proyecto se distribuye bajo la licencia [Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es).
+
+Eres libre de compartir y adaptar el material, siempre que des el crédito correspondiente a los integrantes, no lo uses con fines comerciales y distribuyas tus modificaciones bajo la misma licencia.
 
 ## Tecnologías y librerías principales
 
@@ -16,7 +29,7 @@ Aplicación móvil de la tienda, construida con **React Native + Expo**. Permite
 
 - Node.js 18+
 - La app de [Expo Go](https://expo.dev/go) (para probar en un dispositivo físico) o un emulador de Android/iOS
-- El backend (`backend/`) corriendo en `http://localhost:3000`
+- El backend (`backend/`) corriendo en `http://localhost:3000` (para desarrollo local)
 
 ## Instalación y ejecución
 
@@ -30,13 +43,56 @@ Esto abre el Metro Bundler de Expo: desde ahí se puede escanear el código QR c
 
 ### Configurar la URL del backend
 
-La app toma la URL de la API de la variable de entorno pública `EXPO_PUBLIC_API_URL` (ver `.env` / `.env.example`):
+La app toma la URL de la API de la variable de entorno pública `EXPO_PUBLIC_API_URL`. Copia `.env.example` a `.env` y ajusta el valor:
+
+```bash
+cp .env.example .env
+```
 
 ```bash
 EXPO_PUBLIC_API_URL=http://localhost:3000/api
 ```
 
 `localhost` solo funciona al correr la app en el emulador o en modo web. Al probar en un dispositivo físico con Expo Go, `localhost` apunta al teléfono, no a la computadora que corre el backend, así que hay que reemplazarlo por la IP de la red local de la computadora (ej. `http://192.168.1.50:3000/api`).
+
+> El archivo `.env` **no se sube al repositorio** (está en `.gitignore`). Usa `.env.example` como plantilla.
+
+## Generar el APK (Android)
+
+El APK se genera con [EAS Build](https://docs.expo.dev/build/introduction/) y el perfil `preview` definido en `eas.json`.
+
+1. **Desplegar el backend con una URL pública** (HTTPS), ya que un APK instalado en cualquier teléfono no puede alcanzar `localhost` ni una IP de red local.
+2. **Apuntar la app al backend desplegado.** En el `.env`, cambia `EXPO_PUBLIC_API_URL` a la URL pública:
+
+```bash
+   EXPO_PUBLIC_API_URL=https://tu-backend-publico.com/api
+```
+
+   Esta variable se incrusta al momento de compilar, por lo que hay que definirla **antes** de generar el APK (por ejemplo en la sección `env` del perfil en `eas.json`).
+3. **Configurar `eas.json`** con un perfil que produzca APK:
+
+```json
+   {
+     "build": {
+       "preview": {
+         "distribution": "internal",
+         "android": { "buildType": "apk" },
+         "env": {
+           "EXPO_PUBLIC_API_URL": "https://tu-backend-publico.com/api"
+         }
+       }
+     }
+   }
+```
+4. **Compilar:**
+
+```bash
+   npm install -g eas-cli
+   eas login
+   eas build -p android --profile preview
+```
+
+   Al terminar, EAS entrega un enlace de descarga del `.apk` para instalarlo en el dispositivo.
 
 ## Estructura del proyecto
 
