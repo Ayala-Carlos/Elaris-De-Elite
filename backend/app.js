@@ -55,6 +55,11 @@ app.use(cookieParser());
 //Accept JSON 
 app.use(express.json());
 
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // app.use(limiter);
 
 //Create the endpoints
