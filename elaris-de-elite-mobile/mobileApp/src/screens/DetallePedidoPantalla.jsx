@@ -1,17 +1,31 @@
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { servicioOrdenes } from "../services/servicioOrdenes.js";
 import { colores } from "../theme/colores.js";
 import { capitalizar } from "../utils/formatoTexto.js";
 
-// Pantalla de detalle de un pedido: se abre al presionar "Ver detalles del
-// pedido" en una TarjetaPedido (ver PedidosPantalla.jsx), que ya envía el
-// pedido adaptado por navegación para no tener que volver a consultarlo.
 export const DetallePedidoPantalla = ({ route, navigation }) => {
-  const { pedido } = route.params;
+  const { pedido: pedidoInicial } = route.params;
+  const [pedido, setPedido] = useState(pedidoInicial);
+  const [cancelando, setCancelando] = useState(false);
+
   const esEntregado = pedido.estado === "entregado";
-  const colorEstado = esEntregado ? colores.exito : colores.primario;
-  const textoEstado = esEntregado ? "Entregado" : "En proceso";
+  const esCancelado = pedido.estado === "cancelado";
+  const sePuedeCancelar = !esEntregado && !esCancelado;
+
+  const colorEstado = esEntregado
+    ? colores.exito
+    : esCancelado
+    ? colores.error
+    : colores.primario;
+
+  const textoEstado = esEntregado
+    ? "Entregado"
+    : esCancelado
+    ? "Cancelado"
+    : "En proceso";
 
   const direccionCompleta = [
     pedido.direccion?.detailedAddress,
@@ -22,6 +36,34 @@ export const DetallePedidoPantalla = ({ route, navigation }) => {
     .filter(Boolean)
     .join(", ");
 
+  const manejarCancelarPedido = () => {
+    Alert.alert(
+      "Cancelar pedido",
+      "¿Estás seguro de que deseas cancelar este pedido? Esta acción no se puede deshacer.",
+      [
+        { text: "No, conservar", style: "cancel" },
+        {
+          text: "Sí, cancelar pedido",
+          style: "destructive",
+          onPress: ejecutarCancelacion,
+        },
+      ]
+    );
+  };
+
+  const ejecutarCancelacion = async () => {
+    setCancelando(true);
+    try {
+      await servicioOrdenes.cancelar(pedido.id || pedido._id);
+      setPedido((previo) => ({ ...previo, estado: "cancelado" }));
+      Alert.alert("Pedido cancelado", "Tu pedido ha sido cancelado con éxito.");
+    } catch (error) {
+      Alert.alert("Error", error.message || "No se pudo cancelar el pedido.");
+    } finally {
+      setCancelando(false);
+    }
+  };
+
   return (
     <SafeAreaView style={estilos.contenedor} edges={["top"]}>
       <ScrollView contentContainerStyle={estilos.scroll}>
@@ -31,7 +73,9 @@ export const DetallePedidoPantalla = ({ route, navigation }) => {
 
         <View style={estilos.encabezado}>
           <View>
-            <Text style={estilos.titulo}>Pedido #{String(pedido.id).slice(-6).toUpperCase()}</Text>
+            <Text style={estilos.titulo}>
+              Pedido #{String(pedido.id || pedido._id).slice(-6).toUpperCase()}
+            </Text>
             <Text style={estilos.fecha}>{pedido.fecha}</Text>
           </View>
           <View style={[estilos.insignia, { backgroundColor: `${colorEstado}22` }]}>
@@ -122,6 +166,24 @@ export const DetallePedidoPantalla = ({ route, navigation }) => {
             </View>
           ) : null}
         </View>
+
+        {/* BOTÓN CANCELAR PEDIDO */}
+        {sePuedeCancelar && (
+          <Pressable
+            style={[estilos.botonCancelar, cancelando && estilos.botonCancelarDeshabilitado]}
+            onPress={manejarCancelarPedido}
+            disabled={cancelando}
+          >
+            {cancelando ? (
+              <ActivityIndicator color="#FFF" size="small" />
+            ) : (
+              <>
+                <Ionicons name="close-circle-outline" size={18} color="#FFF" style={{ marginRight: 8 }} />
+                <Text style={estilos.textoBotonCancelar}>Cancelar pedido</Text>
+              </>
+            )}
+          </Pressable>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -196,6 +258,17 @@ const estilos = StyleSheet.create({
     borderTopColor: colores.borde,
   },
   textoMetodoPago: { marginLeft: 8, fontSize: 12, color: colores.textoClaro },
+  botonCancelar: {
+    flexDirection: "row",
+    backgroundColor: colores.error,
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
+  },
+  botonCancelarDeshabilitado: { opacity: 0.6 },
+  textoBotonCancelar: { color: "#FFF", fontSize: 14, fontWeight: "700" },
 });
 
 export default DetallePedidoPantalla;
